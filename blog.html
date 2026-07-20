@@ -1,0 +1,383 @@
+?<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog | Algoritmux | Inteligência de Growth e Conversão</title>
+    <meta name="description" content="Artigos, análises e insights sobre growth hacking, CRO, design de conversão e alinhamento de marketing e vendas B2B.">
+    <meta name="keywords" content="blog growth, marketing de performance, cro, ux ui design, leads b2b, revenue operations">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Blog | Algoritmux | Inteligência de Growth e Conversão">
+    <meta property="og:description" content="Acesse insights práticos sobre sistemas de crescimento previsível e engenharia de conversão.">
+    <meta property="og:image" content="assets/images/blog/blog_growth_ai_office.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="assets/css/styles.css">
+
+    <!-- Custom Blog Styles for Purple/Lilac Tones -->
+    <style>
+        .blog-hero {
+            padding: 160px 0 60px 0;
+            text-align: center;
+            position: relative;
+        }
+        
+        .blog-grid {
+            margin-top: 40px;
+            margin-bottom: 100px;
+        }
+
+        .blog-card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            border: 1px solid rgba(216, 180, 254, 0.1);
+            background: rgba(36, 20, 91, 0.2);
+            transition: var(--transition-smooth);
+            overflow: hidden;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(216, 180, 254, 0.4);
+            box-shadow: 0 20px 40px -15px rgba(86, 31, 157, 0.4), 0 0 30px -10px rgba(216, 180, 254, 0.2);
+        }
+
+        .blog-image-wrapper {
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(216, 180, 254, 0.1);
+        }
+
+        .blog-cover-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition-smooth);
+        }
+
+        .blog-card:hover .blog-cover-img {
+            transform: scale(1.05);
+        }
+
+        .blog-info {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .blog-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            margin-bottom: 16px;
+        }
+
+        .blog-tag {
+            background: rgba(86, 31, 157, 0.4);
+            color: var(--color-primary-light);
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(216, 180, 254, 0.2);
+        }
+
+        .blog-card-title {
+            font-size: 1.25rem;
+            line-height: 1.4;
+            margin-bottom: 12px;
+            color: var(--color-text-white);
+            transition: var(--transition-fast);
+        }
+
+        .blog-card:hover .blog-card-title {
+            color: var(--color-primary-light);
+        }
+
+        .blog-excerpt {
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+            line-height: 1.6;
+            margin-bottom: 24px;
+            flex-grow: 1;
+        }
+
+        .blog-read-more {
+            align-self: flex-start;
+            background: transparent;
+            border: 1px solid rgba(216, 180, 254, 0.3);
+            color: var(--color-primary-light);
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.85rem;
+            width: 100%;
+            text-align: center;
+            transition: var(--transition-fast);
+        }
+
+        .blog-card:hover .blog-read-more {
+            background: var(--color-primary);
+            border-color: var(--color-primary-light);
+            color: var(--color-text-white);
+            box-shadow: var(--shadow-glow-cyan);
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Elements -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <div class="grid-overlay"></div>
+
+    <!-- Header Navigation -->
+    <header class="header">
+        <div class="container header-container">
+            <a href="index.html" class="logo-brand">
+                <img src="assets/images/branding/logo.png" alt="Algoritmux" class="logo-image">
+            </a>
+            
+            <nav class="nav-menu" id="navMenu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="equipe.html" class="nav-link">A Equipe</a>
+                <a href="metodologia.html" class="nav-link">Metodologia</a>
+                <a href="blog.html" class="nav-link active">Blog</a>
+            </nav>
+
+            <div class="header-actions">
+                <button class="btn btn-secondary btn-sm open-modal-btn">Solicitar diagnóstico</button>
+                <button class="mobile-nav-toggle" aria-label="Abrir menu" id="mobileNavToggle">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- BLOG HERO SECTION -->
+    <section class="section blog-hero">
+        <div class="container">
+            <div class="badge-glow fade-in" style="margin: 0 auto;">
+                <span>Nosso Blog</span>
+            </div>
+            <h1 class="hero-title mt-4 fade-in delay-1" style="text-align: center;">
+                Inteligência de <span class="text-gradient">Growth & Vendas</span>
+            </h1>
+            <p class="hero-subtitle mt-4 fade-in delay-2" style="margin: 0 auto; max-width: 800px;">
+                Insights profundos, análises de mercado e táticas avançadas criadas pelos especialistas da Algoritmux para escalar sua operação corporativa B2B.
+            </p>
+        </div>
+    </section>
+
+    <!-- BLOG ARTICLES GRID -->
+    <section class="section" style="padding-top: 20px;">
+        <div class="container">
+            <div class="grid grid-3 blog-grid">
+                
+                <!-- Card 1: Growth Hacking & IA -->
+                <a href="artigo-growth-ia.html" class="blog-card scroll-reveal">
+                    <div class="blog-image-wrapper">
+                        <img src="assets/images/blog/blog_growth_ai_office.png" alt="Growth Hacking e Inteligência Artificial no Escritório" class="blog-cover-img">
+                    </div>
+                    <div class="blog-info">
+                        <div class="blog-meta">
+                            <span>10 Jul, 2026</span>
+                        </div>
+                        <h3 class="blog-card-title">O futuro do growth hacking: inteligência artificial e a nova era da conversão</h3>
+                        <p class="blog-excerpt">Como as ferramentas generativas e a modelagem preditiva estão eliminando o achismo das campanhas de aquisição e convertendo mais leads B2B.</p>
+                        <div class="blog-read-more">Ler artigo completo ➔</div>
+                    </div>
+                </a>
+
+                <!-- Card 2: UX/UI Design & CRO -->
+                <a href="artigo-ux-conversao.html" class="blog-card scroll-reveal delay-1">
+                    <div class="blog-image-wrapper">
+                        <img src="assets/images/blog/blog_ux_workspace.png" alt="Design de Conversão e Espaço de Trabalho" class="blog-cover-img">
+                    </div>
+                    <div class="blog-info">
+                        <div class="blog-meta">
+                            <span>08 Jul, 2026</span>
+                        </div>
+                        <h3 class="blog-card-title">Design de conversão: como a psicologia visual duplica as suas vendas</h3>
+                        <p class="blog-excerpt">A ciência por trás da tomada de decisão: conheça os gatilhos visuais e padrões de escaneamento que guiam a atenção do usuário.</p>
+                        <div class="blog-read-more">Ler artigo completo ➔</div>
+                    </div>
+                </a>
+
+                <!-- Card 3: Marketing & Sales Alignment -->
+                <a href="artigo-marketing-vendas.html" class="blog-card scroll-reveal delay-2">
+                    <div class="blog-image-wrapper">
+                        <img src="assets/images/blog/blog_marketing_sales_office.png" alt="Sinergia Marketing e Vendas no Escritório" class="blog-cover-img">
+                    </div>
+                    <div class="blog-info">
+                        <div class="blog-meta">
+                            <span>05 Jul, 2026</span>
+                        </div>
+                        <h3 class="blog-card-title">Sinergia entre marketing e vendas: o fim dos leads desqualificados</h3>
+                        <p class="blog-excerpt">O segredo dos funis previsíveis reside no alinhamento perfeito de SLAs e processos automatizados entre equipes de atração e comerciais.</p>
+                        <div class="blog-read-more">Ler artigo completo ➔</div>
+                    </div>
+                </a>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <a href="index.html" class="logo-brand">
+                    <img src="assets/images/branding/logo.png" alt="Algoritmux" class="logo-image">
+                </a>
+                <p class="footer-desc">
+                    Conectando dados, tecnologia e design para estruturar sistemas previsíveis de vendas corporativas.
+                </p>
+            </div>
+            
+            <div class="footer-links">
+                <h4>Navegação</h4>
+                <a href="index.html" class="footer-link">Home</a>
+                <a href="equipe.html" class="footer-link">A Equipe</a>
+                <a href="metodologia.html" class="footer-link">Metodologia</a>
+                <a href="blog.html" class="footer-link">Blog</a>
+            </div>
+            
+            <div class="footer-info">
+                <h4>Contato</h4>
+                <p><a href="mailto:contato@algoritmux.com.br">contato@algoritmux.com.br</a></p>
+                <p><a href="https://wa.me/5512992474969" target="_blank">+55 (12) 99247-4969</a></p>
+                <div class="footer-socials" style="margin-top: 16px; display: flex; gap: 16px;">
+                    <a href="https://www.instagram.com/algoritmux/" target="_blank" aria-label="Instagram"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></a>
+                    <a href="https://web.facebook.com/agenciaalgoritmux/?locale=pt_BR&_rdc=1&_rdr" target="_blank" aria-label="Facebook"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+                    <a href="https://www.linkedin.com/company/algoritmux-growth-marketing/" target="_blank" aria-label="LinkedIn"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+                    <a href="https://www.tiktok.com/@algoritmux" target="_blank" aria-label="TikTok"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg></a>
+                </div>
+                <p class="copyright">&copy; 2026 Algoritmux. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- INTERACTIVE DIAGNOSTIC MODAL (Shared with main website) -->
+    <div class="modal-overlay" id="diagnosticModal">
+        <div class="modal-card glass-card">
+            <button class="modal-close-btn" aria-label="Fechar">&times;</button>
+            
+            <div class="modal-steps-indicator">
+                <div class="step-dot active" data-step="1"></div>
+                <div class="step-dot" data-step="2"></div>
+                <div class="step-dot" data-step="3"></div>
+            </div>
+            
+            <!-- Step 1: Business Context -->
+            <div class="modal-step-pane active" data-step="1">
+                <h3 class="modal-title">Diagnóstico de performance</h3>
+                <p class="modal-subtitle">Etapa 1 de 3: Sobre a sua operação atual</p>
+                
+                <form id="step1Form" class="modal-form">
+                    <div class="form-group">
+                        <label for="companyName">Nome da Empresa</label>
+                        <input type="text" id="companyName" required placeholder="Ex: TecnoCorp S/A">
+                    </div>
+                    <div class="form-group">
+                        <label for="website">Website da Empresa</label>
+                        <input type="url" id="website" required placeholder="https://seusite.com.br">
+                    </div>
+                    <div class="form-group">
+                        <label for="bottleneck">Qual é o principal gargalo hoje?</label>
+                        <select id="bottleneck" required>
+                            <option value="">Selecione...</option>
+                            <option value="lead-qual">Muitos leads desqualificados chegados no comercial</option>
+                            <option value="traffic-conv">Muitas visitas no site, mas poucas conversões (CRO/UX)</option>
+                            <option value="predict">Falta de previsibilidade e dados soltos em relatórios</option>
+                            <option value="alignment">Desalinhamento completo entre marketing e vendas</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Avançar ➔</button>
+                </form>
+            </div>
+
+            <!-- Step 2: Contact Info -->
+            <div class="modal-step-pane" data-step="2">
+                <h3 class="modal-title">Configurações de contato</h3>
+                <p class="modal-subtitle">Etapa 2 de 3: Quem receberá a análise técnica?</p>
+                
+                <form id="step2Form" class="modal-form">
+                    <div class="form-group">
+                        <label for="contactName">Seu Nome Completo</label>
+                        <input type="text" id="contactName" required placeholder="Ex: Roberto Silva">
+                    </div>
+                    <div class="form-group">
+                        <label for="contactEmail">E-mail Profissional</label>
+                        <input type="email" id="contactEmail" required placeholder="Ex: roberto@empresa.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="contactPhone">WhatsApp Corporativo</label>
+                        <input type="tel" id="contactPhone" required placeholder="Ex: (11) 98765-4321">
+                    </div>
+                    <div class="form-flex-buttons">
+                        <button type="button" class="btn btn-secondary prev-step-btn">➔ voltar</button>
+                        <button type="submit" class="btn btn-primary">Processar dados ➔</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Step 3: Analysis result simulator -->
+            <div class="modal-step-pane" data-step="3">
+                <div class="analysis-processing text-center" id="analysisProcessing">
+                    <div class="spinner"></div>
+                    <h3>Gerando seu diagnóstico estratégico...</h3>
+                    <p>Nossos algoritmos e histórico estão analisando as respostas da sua empresa.</p>
+                </div>
+                
+                <div class="analysis-result hidden" id="analysisResult">
+                    <div class="success-icon-wrapper">✓</div>
+                    <h3 class="modal-title text-emerald">Diagnóstico inicial pronto!</h3>
+                    <p class="modal-subtitle">Relatório gerado para <span id="resCompanyName" class="text-cyan">Sua Empresa</span></p>
+                    
+                    <div class="diagnostic-summary-box">
+                        <div class="summary-metric">
+                            <span class="metric-label">Nível de Fricção do Funil</span>
+                            <span class="metric-score score-high">Crítico</span>
+                        </div>
+                        <p class="diagnostic-comment">
+                            Com base na sua resposta, sua empresa está enfrentando problemas de <strong><span id="resBottleneck">gargalo operacional</span></strong>. Campanhas isoladas geram custos altos e baixo aproveitamento das oportunidades de vendas.
+                        </p>
+                        <div class="recommended-action">
+                            <strong>Próximo passo recomendado:</strong>
+                            <p>Agendamos um briefing estratégico de 15 minutos com um de nossos diretores para alinhar os pilares e apresentar a solução ideal.</p>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary btn-block close-modal-final-btn">Finalizar e falar no whatsapp ➔</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Scripts -->
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
