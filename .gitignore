@@ -22,3 +22,19 @@ venv/
 .env
 .env.*
 !.env.example
+
+# Dependências e artefatos de build
+**/node_modules/
+**/vendor/
+**/dist/
+**/coverage/
+
+# Bancos de dados locais
+*.sqlite
+*.sqlite-*
+
+# Estado local do Laravel
+/backend/storage/logs/*
+/backend/storage/framework/cache/*
+/backend/storage/framework/sessions/*
+/backend/storage/framework/views/*
