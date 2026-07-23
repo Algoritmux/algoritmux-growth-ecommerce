@@ -294,19 +294,24 @@ export function HomePage() {
       </section>
 
       <section className="section section--muted">
-        <div className="site-container split-section split-section--reverse">
-          <ResponsiveImage
-            src="/images/layout/pilares.png"
-            alt="Pilares de experiência do cliente e conversão"
-            width={700}
-            height={620}
-          />
-          <div>
+        <div className="site-container cro-section">
+          <div className="cro-section__heading">
             <Badge>INTELIGÊNCIA DE MARKETING & CRO</Badge>
             <h2>
-              Nenhum sistema de marketing sobrevive a{" "}
+              Nenhum sistema de marketing sobrevive a{' '}
               <span className="gradient-text">uma jornada com atritos.</span>
             </h2>
+          </div>
+          <div className="cro-section__visual">
+            <ResponsiveImage
+              className="cro-section__image"
+              src="/images/layout/funil-cro-dark.png"
+              alt="Fluxo de aquisição, inteligência de marketing, vendas e CRM"
+              width={1339}
+              height={1174}
+            />
+          </div>
+          <div className="cro-section__content">
             <p>
               Trazer tráfego para uma experiência com atritos é acelerar o
               desperdício de caixa. Unimos Inteligência de Dados, Design de
