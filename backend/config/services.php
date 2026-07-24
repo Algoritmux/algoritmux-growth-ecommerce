@@ -35,4 +35,13 @@ return [
         ],
     ],
 
+    'pipedrive' => [
+        'company_domain' => env('PIPEDRIVE_COMPANY_DOMAIN'),
+        'api_token' => env('PIPEDRIVE_API_TOKEN'),
+        'pipeline_id' => env('PIPEDRIVE_PIPELINE_ID'),
+        'stage_id' => env('PIPEDRIVE_STAGE_ID'),
+        'owner_id' => env('PIPEDRIVE_OWNER_ID'),
+        'timeout' => (int) env('PIPEDRIVE_TIMEOUT', 5),
+    ],
+
 ];
