@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\DiagnosticLead;
+use App\Support\WebsiteNormalizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
@@ -38,6 +39,7 @@ class DiagnosticLeadApiTest extends TestCase
 
         $this->assertSame('5512999999999', $lead->whatsapp);
         $this->assertSame('pessoa@example.test', $lead->email);
+        $this->assertSame('https://empresa.com', $lead->website);
         $this->assertSame('new', $lead->status);
         $this->assertSame(DiagnosticLead::PIPEDRIVE_SYNC_SYNCED, $lead->pipedrive_sync_status);
         $this->assertSame(101, $lead->pipedrive_organization_id);
@@ -52,9 +54,21 @@ class DiagnosticLeadApiTest extends TestCase
         Http::assertSentCount(7);
         Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
             && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/deals')
+            && $request['title'] === 'Diagnóstico | Empresa de Teste | Pessoa de Teste'
             && $request['pipeline_id'] === 1
             && $request['stage_id'] === 1
-            && $request['owner_id'] === 23227558);
+            && $request['owner_id'] === 23227558
+            && $request['revenue_field'] === 60
+            && $request['source_field'] === 64
+            && $request['source_page_field'] === '/'
+            && $request['local_id_field'] === $lead->public_id);
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
+            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/organizations')
+            && $request['website'] === 'https://empresa.com');
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
+            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/persons')
+            && $request['emails'][0]['value'] === 'pessoa@example.test'
+            && $request['phones'][0]['value'] === '5512999999999');
     }
 
     public function test_it_returns_json_validation_errors(): void
@@ -77,6 +91,49 @@ class DiagnosticLeadApiTest extends TestCase
                 'company_name',
                 'revenue_range',
             ]);
+    }
+
+    public function test_it_normalizes_and_accepts_flexible_public_websites(): void
+    {
+        foreach ([
+            'empresa.com' => 'https://empresa.com',
+            'empresa.com.br' => 'https://empresa.com.br',
+            'empresa.io' => 'https://empresa.io',
+            'empresa.ai' => 'https://empresa.ai',
+            'loja.empresa.com/pagina?origem=ads#form' => 'https://loja.empresa.com/pagina?origem=ads#form',
+            'http://empresa.net/contato' => 'http://empresa.net/contato',
+        ] as $input => $expected) {
+            $website = WebsiteNormalizer::normalize($input);
+
+            $this->assertSame($expected, $website);
+            $this->assertTrue(WebsiteNormalizer::isValid($website));
+        }
+
+        $this->assertNull(WebsiteNormalizer::normalize('   '));
+
+        foreach ([
+            'www',
+            'empresa',
+            'javascript:alert(1)',
+            'file:///arquivo',
+            'ftp://empresa.com',
+            'http://localhost',
+            'http://127.0.0.1',
+            'http://192.168.1.10',
+        ] as $input) {
+            $this->assertFalse(WebsiteNormalizer::isValid(WebsiteNormalizer::normalize($input)));
+        }
+    }
+
+    public function test_it_rejects_an_invalid_website_without_saving_the_lead(): void
+    {
+        $response = $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            'website' => 'http://localhost',
+        ]);
+
+        $response->assertUnprocessable()->assertJsonValidationErrors(['website']);
+        $this->assertDatabaseCount('diagnostic_leads', 0);
     }
 
     public function test_it_saves_the_lead_when_pipedrive_configuration_is_missing(): void
@@ -163,6 +220,89 @@ class DiagnosticLeadApiTest extends TestCase
         $this->assertSame('Pipedrive service is unavailable.', $lead->pipedrive_sync_error);
     }
 
+    public function test_it_updates_an_existing_organization_website_only_when_remote_value_is_empty(): void
+    {
+        $this->configurePipedrive();
+        Http::fake(function (Request $request) {
+            $path = parse_url($request->url(), PHP_URL_PATH);
+
+            return match ([$request->method(), $path]) {
+                ['GET', '/api/v2/organizations/search'] => Http::response(['data' => ['items' => [['item' => ['id' => 101]]]]]),
+                ['GET', '/api/v2/organizations/101'] => Http::response(['data' => ['website' => null]]),
+                ['PATCH', '/api/v2/organizations/101'] => Http::response(['data' => ['id' => 101]]),
+                ['GET', '/api/v2/persons/search'] => Http::response(['data' => ['items' => [['item' => ['id' => 202]]]]]),
+                ['GET', '/api/v2/deals/search'] => Http::response(['data' => ['items' => [['item' => ['id' => 303]]]]]),
+                default => Http::response(['error' => 'Unexpected request'], 500),
+            };
+        });
+
+        $this->postJson('/api/v1/leads/diagnostic', $this->leadPayload())->assertCreated();
+
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'PATCH'
+            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/organizations/101')
+            && $request['website'] === 'https://empresa.com');
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'GET'
+            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/deals/search')
+            && $request['term'] === 'Diagnóstico | Empresa de Teste | Pessoa de Teste');
+    }
+
+    public function test_it_does_not_overwrite_an_existing_organization_website(): void
+    {
+        $this->configurePipedrive();
+        Http::fake(function (Request $request) {
+            $path = parse_url($request->url(), PHP_URL_PATH);
+
+            return match ([$request->method(), $path]) {
+                ['GET', '/api/v2/organizations/search'] => Http::response(['data' => ['items' => [['item' => ['id' => 101]]]]]),
+                ['GET', '/api/v2/organizations/101'] => Http::response(['data' => ['website' => 'https://existente.com']]),
+                ['GET', '/api/v2/persons/search'] => Http::response(['data' => ['items' => [['item' => ['id' => 202]]]]]),
+                ['GET', '/api/v2/deals/search'] => Http::response(['data' => ['items' => [['item' => ['id' => 303]]]]]),
+                default => Http::response(['error' => 'Unexpected request'], 500),
+            };
+        });
+
+        $this->postJson('/api/v1/leads/diagnostic', $this->leadPayload())->assertCreated();
+
+        Http::assertNotSent(fn (Request $request): bool => $request->method() === 'PATCH'
+            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/organizations/101'));
+    }
+
+    public function test_it_uses_the_person_name_as_a_deal_title_fallback_when_company_name_is_empty(): void
+    {
+        $this->configurePipedrive();
+        $this->createLead([
+            'company_name' => '',
+            'pipedrive_organization_id' => 101,
+            'pipedrive_person_id' => 202,
+            'pipedrive_sync_status' => DiagnosticLead::PIPEDRIVE_SYNC_PENDING,
+        ]);
+        Http::fakeSequence()
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['id' => 303]]);
+
+        $this->artisan('pipedrive:sync-leads', ['--limit' => 1])->assertExitCode(0);
+
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
+            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/deals')
+            && $request['title'] === 'Diagnóstico | Pessoa de Teste');
+    }
+
+    public function test_it_marks_ambiguous_legacy_revenue_ranges_for_correction_without_calling_pipedrive(): void
+    {
+        $this->configurePipedrive();
+        $lead = $this->createLead([
+            'revenue_range' => '50001_200000',
+            'pipedrive_sync_status' => DiagnosticLead::PIPEDRIVE_SYNC_PENDING,
+        ]);
+
+        $this->artisan('pipedrive:sync-leads', ['--limit' => 1])->assertExitCode(0);
+
+        $lead->refresh();
+        $this->assertSame(DiagnosticLead::PIPEDRIVE_SYNC_FAILED, $lead->pipedrive_sync_status);
+        $this->assertSame('Pipedrive revenue range requires correction.', $lead->pipedrive_sync_error);
+        Http::assertNothingSent();
+    }
+
     public function test_the_reprocessing_command_reuses_remote_ids_and_syncs_the_deal(): void
     {
         $this->configurePipedrive();
@@ -183,6 +323,10 @@ class DiagnosticLeadApiTest extends TestCase
         $lead->refresh();
         $this->assertSame(303, $lead->pipedrive_deal_id);
         $this->assertSame(DiagnosticLead::PIPEDRIVE_SYNC_SYNCED, $lead->pipedrive_sync_status);
+
+        $this->artisan('pipedrive:sync-leads', ['--limit' => 1])
+            ->expectsOutput('Pipedrive sync complete: processed=0 synced=0 failed=0.')
+            ->assertExitCode(0);
         Http::assertSentCount(2);
     }
 
@@ -195,6 +339,20 @@ class DiagnosticLeadApiTest extends TestCase
             'stage_id' => 1,
             'owner_id' => 23227558,
             'timeout' => 2,
+            'org_website_field_key' => 'website',
+            'deal_revenue_field_key' => 'revenue_field',
+            'deal_source_field_key' => 'source_field',
+            'deal_source_option_id' => 64,
+            'deal_source_page_field_key' => 'source_page_field',
+            'deal_local_id_field_key' => 'local_id_field',
+            'revenue_option_ids' => [
+                'up_to_50000' => 58,
+                '50001_75000' => 59,
+                '75001_150000' => 60,
+                '150001_250000' => 61,
+                '250001_500000' => 62,
+                'above_500000' => 63,
+            ],
         ]);
     }
 
@@ -208,8 +366,8 @@ class DiagnosticLeadApiTest extends TestCase
             'whatsapp' => '+55 (12) 99999-9999',
             'email' => 'PESSOA@EXAMPLE.TEST ',
             'company_name' => 'Empresa de Teste',
-            'website' => 'https://empresa.example.test',
-            'revenue_range' => '50001_200000',
+            'website' => 'empresa.com',
+            'revenue_range' => '75001_150000',
             'source_page' => '/',
         ];
     }
@@ -225,7 +383,7 @@ class DiagnosticLeadApiTest extends TestCase
             'whatsapp' => '5512999999999',
             'email' => 'pessoa@example.test',
             'company_name' => 'Empresa de Teste',
-            'revenue_range' => '50001_200000',
+            'revenue_range' => '75001_150000',
             'status' => 'new',
             ...$attributes,
         ]);
