@@ -149,10 +149,15 @@ class PipedriveLeadSyncService
             'owner_id' => (int) config('services.pipedrive.owner_id'),
         ];
 
-        $this->addOptionalField($payload, 'deal_revenue_field_key', $this->revenueOptionId($lead));
-        $this->addOptionalField($payload, 'deal_source_field_key', $this->optionalInteger('deal_source_option_id'));
-        $this->addOptionalField($payload, 'deal_source_page_field_key', $lead->source_page);
-        $this->addOptionalField($payload, 'deal_local_id_field_key', $lead->public_id);
+        $customFields = [];
+        $this->addOptionalField($customFields, 'deal_revenue_field_key', $this->revenueOptionId($lead));
+        $this->addOptionalField($customFields, 'deal_source_field_key', $this->optionalInteger('deal_source_option_id'));
+        $this->addOptionalField($customFields, 'deal_source_page_field_key', $lead->source_page);
+        $this->addOptionalField($customFields, 'deal_local_id_field_key', $lead->public_id);
+
+        if ($customFields !== []) {
+            $payload['custom_fields'] = $customFields;
+        }
 
         return $this->createdId($this->client()->post('deals', $payload));
     }
@@ -203,11 +208,7 @@ class PipedriveLeadSyncService
             return $response;
         }
 
-        throw new RuntimeException(match (true) {
-            $response->status() === 429 => 'Pipedrive rate limit reached.',
-            $response->serverError() => 'Pipedrive service is unavailable.',
-            default => 'Pipedrive request failed.',
-        });
+        throw new RuntimeException($this->safeHttpError($response->status()));
     }
 
     private function isConfigured(): bool
@@ -236,6 +237,20 @@ class PipedriveLeadSyncService
         $error = preg_replace('/\+?\d[\d\s()\-]{8,}\d/', '[redacted-phone]', $error) ?? '';
 
         return Str::limit(trim($error), 255, '');
+    }
+
+    private function safeHttpError(int $status): string
+    {
+        $message = match (true) {
+            $status === 400 || $status === 422 => 'invalid request',
+            $status === 401 || $status === 403 => 'authentication or permission denied',
+            $status === 404 => 'resource not found',
+            $status === 429 => 'rate limit reached',
+            $status >= 500 => 'service is unavailable',
+            default => 'request failed',
+        };
+
+        return "Pipedrive HTTP {$status}: {$message}.";
     }
 
     private function dealTitle(DiagnosticLead $lead): string

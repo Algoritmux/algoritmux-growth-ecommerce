@@ -58,10 +58,14 @@ class DiagnosticLeadApiTest extends TestCase
             && $request['pipeline_id'] === 1
             && $request['stage_id'] === 1
             && $request['owner_id'] === 23227558
-            && $request['revenue_field'] === 60
-            && $request['source_field'] === 64
-            && $request['source_page_field'] === '/'
-            && $request['local_id_field'] === $lead->public_id);
+            && $request['custom_fields']['revenue_field'] === 60
+            && $request['custom_fields']['source_field'] === 64
+            && $request['custom_fields']['source_page_field'] === '/'
+            && $request['custom_fields']['local_id_field'] === $lead->public_id
+            && ! array_key_exists('revenue_field', $request->data())
+            && ! array_key_exists('source_field', $request->data())
+            && ! array_key_exists('source_page_field', $request->data())
+            && ! array_key_exists('local_id_field', $request->data()));
         Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
             && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/organizations')
             && $request['website'] === 'https://empresa.com');
@@ -182,7 +186,7 @@ class DiagnosticLeadApiTest extends TestCase
 
         $lead = DiagnosticLead::firstOrFail();
         $this->assertSame(DiagnosticLead::PIPEDRIVE_SYNC_FAILED, $lead->pipedrive_sync_status);
-        $this->assertSame('Pipedrive rate limit reached.', $lead->pipedrive_sync_error);
+        $this->assertSame('Pipedrive HTTP 429: rate limit reached.', $lead->pipedrive_sync_error);
         Http::assertSentCount(1);
     }
 
@@ -195,7 +199,7 @@ class DiagnosticLeadApiTest extends TestCase
 
         $lead = DiagnosticLead::firstOrFail();
         $this->assertSame(DiagnosticLead::PIPEDRIVE_SYNC_FAILED, $lead->pipedrive_sync_status);
-        $this->assertSame('Pipedrive service is unavailable.', $lead->pipedrive_sync_error);
+        $this->assertSame('Pipedrive HTTP 503: service is unavailable.', $lead->pipedrive_sync_error);
         Http::assertSentCount(1);
     }
 
@@ -217,7 +221,7 @@ class DiagnosticLeadApiTest extends TestCase
         $this->assertSame(202, $lead->pipedrive_person_id);
         $this->assertNull($lead->pipedrive_deal_id);
         $this->assertSame(DiagnosticLead::PIPEDRIVE_SYNC_FAILED, $lead->pipedrive_sync_status);
-        $this->assertSame('Pipedrive service is unavailable.', $lead->pipedrive_sync_error);
+        $this->assertSame('Pipedrive HTTP 503: service is unavailable.', $lead->pipedrive_sync_error);
     }
 
     public function test_it_updates_an_existing_organization_website_only_when_remote_value_is_empty(): void
@@ -274,7 +278,7 @@ class DiagnosticLeadApiTest extends TestCase
             'company_name' => '',
             'pipedrive_organization_id' => 101,
             'pipedrive_person_id' => 202,
-            'pipedrive_sync_status' => DiagnosticLead::PIPEDRIVE_SYNC_PENDING,
+            'pipedrive_sync_status' => DiagnosticLead::PIPEDRIVE_SYNC_FAILED,
         ]);
         Http::fakeSequence()
             ->push(['data' => ['items' => []]])
@@ -309,7 +313,7 @@ class DiagnosticLeadApiTest extends TestCase
         $lead = $this->createLead([
             'pipedrive_organization_id' => 101,
             'pipedrive_person_id' => 202,
-            'pipedrive_sync_status' => DiagnosticLead::PIPEDRIVE_SYNC_PENDING,
+            'pipedrive_sync_status' => DiagnosticLead::PIPEDRIVE_SYNC_FAILED,
         ]);
 
         Http::fakeSequence()
@@ -328,6 +332,32 @@ class DiagnosticLeadApiTest extends TestCase
             ->expectsOutput('Pipedrive sync complete: processed=0 synced=0 failed=0.')
             ->assertExitCode(0);
         Http::assertSentCount(2);
+    }
+
+    public function test_it_creates_a_deal_without_custom_fields_when_optional_configuration_is_absent(): void
+    {
+        $this->configurePipedrive();
+        Config::set('services.pipedrive.deal_revenue_field_key', null);
+        Config::set('services.pipedrive.deal_source_field_key', null);
+        Config::set('services.pipedrive.deal_source_page_field_key', null);
+        Config::set('services.pipedrive.deal_local_id_field_key', null);
+
+        $lead = $this->createLead([
+            'pipedrive_organization_id' => 101,
+            'pipedrive_person_id' => 202,
+            'pipedrive_sync_status' => DiagnosticLead::PIPEDRIVE_SYNC_FAILED,
+        ]);
+        Http::fakeSequence()
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['id' => 303]]);
+
+        $this->artisan('pipedrive:sync-leads', ['--limit' => 1])->assertExitCode(0);
+
+        $lead->refresh();
+        $this->assertSame(DiagnosticLead::PIPEDRIVE_SYNC_SYNCED, $lead->pipedrive_sync_status);
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
+            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/deals')
+            && ! array_key_exists('custom_fields', $request->data()));
     }
 
     private function configurePipedrive(): void
