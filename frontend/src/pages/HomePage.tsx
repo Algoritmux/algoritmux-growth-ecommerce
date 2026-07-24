@@ -152,11 +152,16 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="section section--muted">
+      <section className="section section--editorial-muted">
         <div className="site-container">
           <SectionHeading
             eyebrow="O cenário atual"
-            title="O problema não é falta de leads. É a falta de um sistema que transforma marketing em vendas."
+            title={
+              <>
+                O problema não é falta de leads. É a falta de um sistema que{' '}
+                <span className="gradient-text">transforma marketing em vendas.</span>
+              </>
+            }
             description="Sua empresa investe em campanhas, faz testes e tenta de tudo. Mas sem uma lógica conectando marketing e vendas, o resultado é sempre o mesmo: crescimento instável e imprevisível."
           />
           <div className="feature-grid">
@@ -184,7 +189,9 @@ export function HomePage() {
               },
             ].map((item) => (
               <ScrollReveal key={item.title}>
-                <article className="feature-card">
+                <article
+                  className={`feature-card feature-card--editorial feature-card--${item.iconClass}`}
+                >
                   <span
                     className={`feature-card__icon feature-card__icon--${item.iconClass}`}
                     aria-hidden="true"
@@ -293,7 +300,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="section section--muted">
+      <section className="section section--neutral-dark">
         <div className="site-container cro-section">
           <div className="cro-section__heading">
             <Badge>INTELIGÊNCIA DE MARKETING & CRO</Badge>
@@ -347,7 +354,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="section leadership-section">
+      <section className="section section--neutral-dark leadership-section">
         <div className="site-container">
           <SectionHeading
             eyebrow="OS SÓCIOS"
@@ -380,20 +387,25 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="section">
+      <section className="section section--editorial">
         <div className="site-container">
           <SectionHeading
             eyebrow="Modelos de aceleração"
-            title="Uma estrutura para cada estágio de crescimento."
+            title={
+              <>
+                Uma estrutura para cada{' '}
+                <span className="gradient-text">estágio de crescimento.</span>
+              </>
+            }
             description="Escolha o modelo adequado ao momento e ao objetivo da sua empresa."
           />
           <div
-            className="plan-comparison-scroll"
+            className="plan-comparison-scroll plan-comparison-scroll--editorial"
             role="region"
             aria-label="Comparativo dos modelos de aceleração"
             tabIndex={0}
           >
-            <table className="plan-comparison">
+            <table className="plan-comparison plan-comparison--editorial">
               <thead>
                 <tr>
                   <th scope="col">Comparativo de planos</th>
@@ -448,7 +460,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="section story-section">
+      <section className="section section--neutral-dark story-section">
         <div className="site-container story-panel">
           <Badge>O custo da desorganização</Badge>
           <h2>Tráfego não salva um funil quebrado.</h2>
@@ -469,7 +481,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="section final-cta">
+      <section className="section section--neutral-dark final-cta">
         <div className="site-container final-cta__inner">
           <ResponsiveImage
             src="/images/layout/performance.jpg"
