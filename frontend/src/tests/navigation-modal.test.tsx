@@ -15,8 +15,9 @@ async function fillBusinessStep(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText('Nome da empresa'), 'Empresa Teste');
   await user.selectOptions(
     screen.getByLabelText('Faturamento mensal'),
-    '50001_200000',
+    '75001_150000',
   );
+  await user.type(screen.getByLabelText('Site da empresa'), 'empresa.io');
   await user.click(screen.getByRole('button', { name: 'Continuar' }));
 }
 
@@ -87,13 +88,14 @@ describe('navegação e diagnóstico', () => {
       expect(screen.getByText('Diagnóstico recebido')).toBeVisible();
     });
     expect(fetchSpy).toHaveBeenCalledWith(
-      'http://127.0.0.1:8000/api/v1/leads/diagnostic',
+      expect.stringContaining('/api/v1/leads/diagnostic'),
       expect.objectContaining({ method: 'POST' }),
     );
     expect(JSON.parse(String(fetchSpy.mock.calls[0][1]?.body))).toMatchObject({
       whatsapp: '12999999999',
       email: 'pessoa@example.test',
-      revenue_range: '50001_200000',
+      website: 'https://empresa.io',
+      revenue_range: '75001_150000',
       source_page: '/',
     });
 

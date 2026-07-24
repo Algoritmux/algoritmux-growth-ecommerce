@@ -32,7 +32,10 @@ export function DiagnosticBusinessStep({ onNext }: { onNext: () => void }) {
         Site da empresa
         <input
           {...register('website')}
-          type="url"
+          type="text"
+          inputMode="url"
+          autoCapitalize="none"
+          autoCorrect="off"
           placeholder="https://suaempresa.com.br"
           aria-invalid={Boolean(errors.website)}
           aria-describedby={errors.website ? 'website-error' : undefined}
@@ -54,10 +57,12 @@ export function DiagnosticBusinessStep({ onNext }: { onNext: () => void }) {
           <option value="" disabled>
             Selecione uma opção
           </option>
-          <option value="1000_50000">R$ 1.000 a R$ 50.000</option>
-          <option value="50001_200000">R$ 50.00 a R$ 200.000</option>
-          <option value="200001_500000">R$ 200.00 a R$ 500.000</option>
-          <option value="above_500000">Acima de R$ 500.000</option>
+          <option value="up_to_50000">Até R$ 50.000,00</option>
+          <option value="50001_75000">R$ 50.001,00 até R$ 75.000,00</option>
+          <option value="75001_150000">R$ 75.001,00 até R$ 150.000,00</option>
+          <option value="150001_250000">R$ 150.001,00 até R$ 250.000,00</option>
+          <option value="250001_500000">R$ 250.001,00 até R$ 500.000,00</option>
+          <option value="above_500000">Acima de R$ 500.000,00</option>
         </select>
       </label>
       {errors.revenue_range ? (

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\WebsiteNormalizer;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -29,14 +30,20 @@ class StoreDiagnosticLeadRequest extends FormRequest
             'whatsapp' => ['required', 'string', 'regex:/^\d{10,20}$/'],
             'email' => ['required', 'string', 'email:rfc', 'max:254'],
             'company_name' => ['required', 'string', 'max:255'],
-            'website' => ['nullable', 'string', 'url', 'max:255'],
+            'website' => ['nullable', 'string', 'max:255', function (string $attribute, mixed $value, \Closure $fail): void {
+                if (! WebsiteNormalizer::isValid($value)) {
+                    $fail('Informe um site válido.');
+                }
+            }],
             'revenue_range' => [
                 'required',
                 'string',
                 Rule::in([
-                    '1000_50000',
-                    '50001_200000',
-                    '200001_500000',
+                    'up_to_50000',
+                    '50001_75000',
+                    '75001_150000',
+                    '150001_250000',
+                    '250001_500000',
                     'above_500000',
                 ]),
             ],
@@ -52,7 +59,7 @@ class StoreDiagnosticLeadRequest extends FormRequest
         $this->merge([
             'email' => is_string($email) ? mb_strtolower(trim($email)) : $email,
             'whatsapp' => preg_replace('/\D+/', '', (string) $this->input('whatsapp')),
-            'website' => is_string($website) && trim($website) === '' ? null : $website,
+            'website' => WebsiteNormalizer::normalize($website),
         ]);
     }
 

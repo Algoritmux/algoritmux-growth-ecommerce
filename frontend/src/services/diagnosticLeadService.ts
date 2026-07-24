@@ -1,4 +1,7 @@
-import type { DiagnosticLeadFormValues } from '../components/diagnostic/diagnosticLeadSchema';
+import {
+  normalizeWebsite,
+  type DiagnosticLeadFormValues,
+} from '../components/diagnostic/diagnosticLeadSchema';
 
 type ApiValidationErrors = Record<string, string[]>;
 
@@ -47,7 +50,7 @@ export async function submitDiagnosticLead(
       whatsapp: values.whatsapp.replace(/\D/g, ''),
       email: values.email.trim().toLowerCase(),
       company_name: values.company_name.trim(),
-      website: values.website.trim() || undefined,
+      website: normalizeWebsite(values.website) || undefined,
       revenue_range: values.revenue_range,
       source_page: window.location.pathname,
     }),

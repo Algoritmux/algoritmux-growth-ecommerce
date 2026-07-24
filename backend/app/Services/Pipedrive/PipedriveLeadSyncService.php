@@ -31,6 +31,8 @@ class PipedriveLeadSyncService
         ])->save();
 
         try {
+            $this->revenueOptionId($lead);
+
             $organizationId = $lead->pipedrive_organization_id ?: $this->findOrCreateOrganization($lead);
 
             if (! $lead->pipedrive_organization_id) {
@@ -74,12 +76,18 @@ class PipedriveLeadSyncService
         ]);
 
         if ($organizationId) {
+            $this->updateOrganizationWebsiteIfEmpty($organizationId, $lead->website);
+
             return $organizationId;
         }
 
-        return $this->createdId($this->client()->post('organizations', [
+        $payload = [
             'name' => $lead->company_name,
-        ]));
+        ];
+
+        $this->addOptionalField($payload, 'org_website_field_key', $lead->website);
+
+        return $this->createdId($this->client()->post('organizations', $payload));
     }
 
     private function findOrCreatePerson(DiagnosticLead $lead, int $organizationId): int
@@ -132,14 +140,21 @@ class PipedriveLeadSyncService
             return $dealId;
         }
 
-        return $this->createdId($this->client()->post('deals', [
+        $payload = [
             'title' => $title,
             'person_id' => $personId,
             'org_id' => $organizationId,
             'pipeline_id' => (int) config('services.pipedrive.pipeline_id'),
             'stage_id' => (int) config('services.pipedrive.stage_id'),
             'owner_id' => (int) config('services.pipedrive.owner_id'),
-        ]));
+        ];
+
+        $this->addOptionalField($payload, 'deal_revenue_field_key', $this->revenueOptionId($lead));
+        $this->addOptionalField($payload, 'deal_source_field_key', $this->optionalInteger('deal_source_option_id'));
+        $this->addOptionalField($payload, 'deal_source_page_field_key', $lead->source_page);
+        $this->addOptionalField($payload, 'deal_local_id_field_key', $lead->public_id);
+
+        return $this->createdId($this->client()->post('deals', $payload));
     }
 
     private function firstSearchResultId(string $path, array $query): ?int
@@ -225,6 +240,71 @@ class PipedriveLeadSyncService
 
     private function dealTitle(DiagnosticLead $lead): string
     {
-        return sprintf('Diagnóstico de marketing | %s', $lead->public_id);
+        $parts = ['Diagnóstico'];
+
+        foreach ([$lead->company_name, $lead->name] as $value) {
+            $value = preg_replace('/\s+/', ' ', trim((string) $value));
+
+            if ($value !== '') {
+                $parts[] = $value;
+            }
+        }
+
+        return Str::limit(implode(' | ', $parts), 255, '');
+    }
+
+    private function updateOrganizationWebsiteIfEmpty(int $organizationId, ?string $website): void
+    {
+        $fieldKey = config('services.pipedrive.org_website_field_key');
+
+        if (! filled($website) || ! filled($fieldKey)) {
+            return;
+        }
+
+        $response = $this->successful($this->client()->get("organizations/{$organizationId}"));
+
+        if (filled(data_get($response->json(), "data.{$fieldKey}"))) {
+            return;
+        }
+
+        $this->successful($this->client()->patch("organizations/{$organizationId}", [
+            $fieldKey => $website,
+        ]));
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function addOptionalField(array &$payload, string $configurationKey, mixed $value): void
+    {
+        $fieldKey = config("services.pipedrive.{$configurationKey}");
+
+        if (filled($fieldKey) && filled($value)) {
+            $payload[$fieldKey] = $value;
+        }
+    }
+
+    private function revenueOptionId(DiagnosticLead $lead): ?int
+    {
+        if (! filled(config('services.pipedrive.deal_revenue_field_key'))) {
+            return null;
+        }
+
+        $range = match ($lead->revenue_range) {
+            '1000_50000' => 'up_to_50000',
+            'above_500000' => 'above_500000',
+            '50001_200000', '200001_500000' => throw new RuntimeException('Pipedrive revenue range requires correction.'),
+            default => $lead->revenue_range,
+        };
+        $optionId = config("services.pipedrive.revenue_option_ids.{$range}");
+
+        return is_numeric($optionId) ? (int) $optionId : null;
+    }
+
+    private function optionalInteger(string $configurationKey): ?int
+    {
+        $value = config("services.pipedrive.{$configurationKey}");
+
+        return is_numeric($value) ? (int) $value : null;
     }
 }
