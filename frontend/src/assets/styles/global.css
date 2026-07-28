@@ -23,11 +23,12 @@
   --color-text-primary: #f8fafc;
   --color-text-secondary: #c4b5d8;
   --color-text-muted: #98a4b8;
+  --color-text-test: #334155;
   --color-text-dark: #111827;
   --color-border: rgba(255, 255, 255, 0.12);
   --color-border-strong: rgba(255, 255, 255, 0.2);
   --color-border-light: #dbe4ee;
-  --color-text-on-light-muted: #526174;
+  --color-text-on-light-muted: #334155;
   --shadow-card: 0 24px 70px rgba(0, 0, 0, 0.3);
   --shadow-cta: 0 12px 35px rgba(34, 197, 94, 0.25);
   --radius-sm: 0.75rem;
@@ -703,7 +704,7 @@ select:focus-visible,
 
 .feature-card p {
   margin-top: 0.85rem;
-  color: var(--color-text-muted);
+  color: var(--color-text-test);
   font-size: 0.92rem;
 }
 
@@ -909,7 +910,7 @@ select:focus-visible,
 }
 
 .vision-section .benefit-card__description {
-  color: #64748b;
+  color: var(--color-text-on-light-muted);
   font-size: 0.84rem;
   line-height: 1.7;
 }
