@@ -40,7 +40,7 @@ const cycles = [
     imageAlt: 'Flywheel Ciclo 2',
     steps: [
       [
-        'Otimização do portfólio',
+        'Otimização de portfólio',
         'Aprimoramos continuamente a oferta a partir das necessidades dos clientes.',
       ],
       [
