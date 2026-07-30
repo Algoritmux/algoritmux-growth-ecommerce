@@ -7,7 +7,10 @@ export function DesktopNavigation() {
   return (
     <nav className="desktop-nav" aria-label="Navegação principal">
       {navigation.map((item) => {
-        const active = pathname === item.path || item.aliases.includes(pathname);
+        const active =
+          pathname === item.path ||
+          item.aliases.includes(pathname) ||
+          (item.path === '/blog' && pathname.startsWith('/blog/'));
         return (
           <Link
             key={item.path}

@@ -14,10 +14,9 @@ export function App() {
         <Route path="/index.html" element={<HomePage />} />
         <Route path="/metodologia.html" element={<MethodologyPage />} />
         <Route path="/equipe.html" element={<TeamPage />} />
-        <Route path="/blog.html" element={<BlogPage />} />
-        <Route path="/artigo-growth-ia.html" element={<ArticlePage />} />
-        <Route path="/artigo-ux-conversao.html" element={<ArticlePage />} />
-        <Route path="/artigo-marketing-vendas.html" element={<ArticlePage />} />
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog.html" element={<Navigate to="/blog" replace />} />
+        <Route path="/blog/:slug" element={<ArticlePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

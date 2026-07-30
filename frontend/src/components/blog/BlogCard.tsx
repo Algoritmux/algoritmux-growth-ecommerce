@@ -7,13 +7,19 @@ export function BlogCard({ article }: { article: Article }) {
     <article className="blog-card">
       <Link to={article.path} aria-label={`Ler artigo: ${article.title}`}>
         <div className="blog-card__image">
-          <ResponsiveImage
-            src={article.image}
-            alt={article.imageAlt}
-            width={720}
-            height={405}
-            aspectRatio="16 / 9"
-          />
+          {article.image ? (
+            <ResponsiveImage
+              src={article.image}
+              alt={article.imageAlt}
+              width={720}
+              height={405}
+              aspectRatio="16 / 9"
+            />
+          ) : (
+            <div className="blog-card__image-placeholder" aria-hidden="true">
+              <span>Algoritmux</span>
+            </div>
+          )}
         </div>
         <div className="blog-card__content">
           <div className="blog-card__meta">

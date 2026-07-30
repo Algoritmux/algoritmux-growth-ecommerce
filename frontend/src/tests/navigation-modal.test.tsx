@@ -30,7 +30,7 @@ async function fillContactStep(user: ReturnType<typeof userEvent.setup>) {
 describe('navegação e diagnóstico', () => {
   it('marca a rota ativa e controla o menu mobile com aria-expanded', async () => {
     const user = userEvent.setup();
-    renderApp('/blog.html');
+    renderApp('/blog');
     const activeLinks = screen.getAllByRole('link', { name: 'Blog' });
     expect(activeLinks[0]).toHaveAttribute('aria-current', 'page');
 

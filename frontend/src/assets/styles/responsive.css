@@ -389,17 +389,65 @@
     padding: 112px 0 78px;
   }
 
+  .article-loading {
+    min-height: 72rem;
+  }
+
+  .article-loading__header {
+    min-height: 29rem;
+  }
+
+  .article-loading__meta {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .article-loading__body {
+    min-height: 39rem;
+  }
+
+  .article-header {
+    padding: clamp(2rem, 7vw, 3rem);
+    border-radius: 1.5rem;
+  }
+
+  .article-layout--with-cover .article-header {
+    padding-bottom: 5rem;
+  }
+
   .article-header h1 {
-    font-size: clamp(2.15rem, 9.5vw, 3rem);
+    max-width: 680px;
+    font-size: clamp(2.15rem, 8.5vw, 3.25rem);
   }
 
   .article-meta {
     align-items: flex-start;
     flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .article-meta > * + *::before {
+    display: none;
+  }
+
+  .article-featured-media {
+    width: calc(100% - 32px);
+    margin-top: -3rem;
+    border-radius: 1.25rem;
+  }
+
+  .article-body {
+    padding: clamp(1.75rem, 6vw, 3rem);
+  }
+
+  .article-layout--with-cover .article-body {
+    margin-top: -2rem;
+    padding-top: clamp(4rem, 9vw, 5rem);
   }
 
   .article-content {
-    margin-top: 2.5rem;
+    margin-top: 0;
   }
 
   .vision-copy h2 {
@@ -485,17 +533,93 @@
     width: min(100% - 32px, 680px);
   }
 
+  .article-loading {
+    min-height: 68rem;
+  }
+
+  .article-loading__header {
+    min-height: 27rem;
+  }
+
+  .article-loading__title .article-loading__line {
+    height: clamp(2rem, 10vw, 2.7rem);
+  }
+
+  .article-loading__title .article-loading__line:last-child {
+    width: 82%;
+  }
+
+  .article-loading__summary .article-loading__line:last-child {
+    width: 88%;
+  }
+
+  .article-loading__body {
+    min-height: 37rem;
+  }
+
+  .article-loading__content {
+    gap: 2.2rem;
+  }
+
+  .article-loading__line--heading {
+    width: 68%;
+  }
+
+  .article-loading__line--subheading {
+    width: 58%;
+  }
+
   .article-header {
-    padding-bottom: 1.75rem;
+    padding: 1.75rem 1.35rem 2rem;
+    border-radius: 1rem;
+  }
+
+  .article-layout--with-cover .article-header {
+    padding-bottom: 2rem;
+  }
+
+  .article-header .article-back-link {
+    margin-bottom: 1.5rem;
+  }
+
+  .article-header h1 {
+    font-size: clamp(2rem, 10.5vw, 2.7rem);
+    line-height: 1.08;
+  }
+
+  .article-summary {
+    line-height: 1.62;
+  }
+
+  .article-featured-media {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.25rem;
+    border-radius: 1rem;
   }
 
   .article-featured-image {
-    margin-top: 2rem;
+    border-radius: 0.8rem;
+  }
+
+  .article-body,
+  .article-layout--with-cover .article-body {
+    margin-top: 1rem;
+    padding: 2rem 1.35rem 2.5rem;
     border-radius: 1rem;
   }
 
   .article-content blockquote {
     padding: 1.25rem 1.35rem;
+  }
+
+  .article-content ul,
+  .article-content ol {
+    padding-left: 1.4rem;
+  }
+
+  .article-content li {
+    padding-left: 0.1rem;
   }
 
   .feature-card {

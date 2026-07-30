@@ -4,11 +4,7 @@ export const navigation = [
   { label: 'Metodologia', path: '/metodologia.html', aliases: [] },
   {
     label: 'Blog',
-    path: '/blog.html',
-    aliases: [
-      '/artigo-growth-ia.html',
-      '/artigo-ux-conversao.html',
-      '/artigo-marketing-vendas.html',
-    ],
+    path: '/blog',
+    aliases: ['/blog.html'],
   },
 ];
