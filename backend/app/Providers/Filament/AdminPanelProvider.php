@@ -33,12 +33,14 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight('3rem')
             ->favicon(asset('images/admin/algoritmux-logo.png'))
             ->font('Montserrat')
+            ->globalSearch(false)
             ->colors([
                 'primary' => Color::Green,
                 'info' => Color::Cyan,
                 'gray' => Color::Slate,
             ])
             ->darkMode(false)
+            ->bootUsing(fn () => app()->setLocale('pt_BR'))
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->sidebarCollapsibleOnDesktop()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')

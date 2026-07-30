@@ -1,8 +1,3 @@
-export type ArticleContentBlock =
-  | { type: 'paragraph'; text: string }
-  | { type: 'heading'; text: string }
-  | { type: 'quote'; text: string };
-
 export type Article = {
   slug: string;
   path: string;
@@ -10,9 +5,11 @@ export type Article = {
   summary: string;
   category: string;
   date: string;
-  image: string;
+  author: string;
+  readingTimeMinutes: number;
+  image?: string;
   imageAlt: string;
-  content: ArticleContentBlock[];
+  contentHtml?: string;
   metadata: {
     title: string;
     description: string;

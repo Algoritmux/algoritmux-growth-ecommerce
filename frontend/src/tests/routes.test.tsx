@@ -2,6 +2,19 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { App } from '../App';
 
+const routeArticle = {
+  title: 'Artigo servido pela API',
+  slug: 'artigo-api',
+  excerpt: 'Resumo do artigo servido pela API.',
+  category: 'Growth',
+  reading_time_minutes: 4,
+  is_featured: false,
+  published_at: '2026-07-30T12:00:00-03:00',
+  cover_image: null,
+  author: { name: 'Equipe Algoritmux' },
+  seo: { title: null, description: null },
+};
+
 function renderRoute(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
@@ -11,12 +24,20 @@ function renderRoute(path: string) {
 }
 
 describe('rotas públicas', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new TypeError('offline'))));
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it.each([
     ['/', /Crescimento não é ação isolada/i],
     ['/index.html', /Crescimento não é ação isolada/i],
     ['/metodologia.html', /A Metodologia Algoritmux/i],
     ['/equipe.html', /Especialistas multidisciplinares/i],
-    ['/blog.html', /Inteligência de Growth & Vendas/i],
+    ['/blog', /Inteligência de Growth & Vendas/i],
   ])('carrega %s', (path, title) => {
     renderRoute(path);
     expect(screen.getByRole('heading', { level: 1, name: title })).toBeVisible();
@@ -31,22 +52,60 @@ describe('rotas públicas', () => {
     ).toBeVisible();
   });
 
+  it('carrega um artigo pela rota dinâmica da API', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: string | URL | Request) =>
+        String(input).endsWith('/artigo-api')
+          ? jsonResponse({ data: { ...routeArticle, content: '<p>Conteúdo.</p>' } })
+          : jsonResponse({
+              data: [routeArticle],
+              links: { first: null, last: null, prev: null, next: null },
+              meta: {
+                current_page: 1,
+                from: 1,
+                last_page: 1,
+                path: 'http://127.0.0.1:8000/api/v1/articles',
+                per_page: 12,
+                to: 1,
+                total: 1,
+              },
+            }),
+      ),
+    );
+
+    renderRoute('/blog/artigo-api');
+
+    expect(
+      await screen.findByRole('heading', {
+        level: 1,
+        name: 'Artigo servido pela API',
+      }),
+    ).toBeVisible();
+    expect(screen.getByRole('article')).toHaveClass('article-layout');
+  });
+
   it.each([
-    [
-      '/artigo-growth-ia.html',
-      /O futuro do growth hacking: inteligência artificial/i,
-    ],
-    [
-      '/artigo-ux-conversao.html',
-      /Design de conversão \(UX\/UI\): como a psicologia visual/i,
-    ],
-    [
-      '/artigo-marketing-vendas.html',
-      /Sinergia entre marketing e vendas/i,
-    ],
-  ])('carrega o artigo %s', (path, title) => {
+    '/artigo-growth-ia.html',
+    '/artigo-ux-conversao.html',
+    '/artigo-marketing-vendas.html',
+  ])('não mantém a rota estática %s', async (path) => {
     renderRoute(path);
-    expect(screen.getByRole('heading', { level: 1, name: title })).toBeVisible();
-    expect(screen.getAllByRole('article')[0]).toHaveClass('article-layout');
+
+    expect(
+      await screen.findByRole('heading', {
+        level: 1,
+        name: /Crescimento não é ação isolada/i,
+      }),
+    ).toBeVisible();
   });
 });
+
+function jsonResponse(body: unknown, status = 200): Promise<Response> {
+  return Promise.resolve(
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { 'Content-Type': 'application/json' },
+    }),
+  );
+}
