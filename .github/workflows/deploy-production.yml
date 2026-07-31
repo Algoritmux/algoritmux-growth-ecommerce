@@ -23,7 +23,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: "8.2"
           extensions: mbstring, intl, pdo_sqlite, fileinfo
           coverage: none
           tools: composer:v2
@@ -39,19 +39,10 @@ jobs:
           php artisan key:generate
           touch database/database.sqlite
 
-      - name: Test backend
-        working-directory: backend
-        env:
-          DB_CONNECTION: sqlite
-          DB_DATABASE: database/database.sqlite
-        run: |
-          php artisan test
-          vendor/bin/pint --test
-
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: "24"
           cache: npm
           cache-dependency-path: |
             backend/package-lock.json
@@ -62,6 +53,15 @@ jobs:
         run: |
           npm ci
           npm run build
+          
+      - name: Test backend
+        working-directory: backend
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
+        run: |
+          php artisan test
+          vendor/bin/pint --test
 
       - name: Validate and build frontend
         working-directory: frontend
