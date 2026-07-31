@@ -86,7 +86,11 @@ class AdminPanelAccessTest extends TestCase
 
         $this->get('/admin')
             ->assertOk()
-            ->assertSee('Dashboard');
+            ->assertSee('Dashboard')
+            ->assertSee('Ver site')
+            ->assertSee('href="https://algoritmux.com"', false)
+            ->assertSee('target="_blank"', false)
+            ->assertSee('rel="noopener noreferrer"', false);
 
         $this->post('/admin/logout')
             ->assertRedirect('/admin/login');
