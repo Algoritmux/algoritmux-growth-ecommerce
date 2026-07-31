@@ -10,7 +10,9 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
+use Illuminate\Contracts\View\View;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -34,6 +36,10 @@ class AdminPanelProvider extends PanelProvider
             ->favicon(asset('images/admin/algoritmux-logo.png'))
             ->font('Montserrat')
             ->globalSearch(false)
+            ->renderHook(
+                PanelsRenderHook::GLOBAL_SEARCH_AFTER,
+                fn (): View => view('filament.admin.components.view-site-button'),
+            )
             ->colors([
                 'primary' => Color::Green,
                 'info' => Color::Cyan,

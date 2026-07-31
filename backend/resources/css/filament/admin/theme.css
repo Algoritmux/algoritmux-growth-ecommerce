@@ -50,6 +50,41 @@
     color: #fff;
 }
 
+.fi-sidebar .fi-sidebar-item.fi-sidebar-item-has-url > .fi-sidebar-item-btn {
+    transition:
+        background-color 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.fi-sidebar
+    .fi-sidebar-item.fi-sidebar-item-has-url:not(.fi-active)
+    > .fi-sidebar-item-btn:hover,
+.fi-sidebar
+    .fi-sidebar-item.fi-sidebar-item-has-url:not(.fi-active)
+    > .fi-sidebar-item-btn:focus-visible {
+    background-color: rgb(109 40 217 / 26%);
+    box-shadow: inset 2px 0 0 rgb(6 182 212 / 62%);
+}
+
+.fi-sidebar
+    .fi-sidebar-item.fi-sidebar-item-has-url:not(.fi-active)
+    > .fi-sidebar-item-btn:hover
+    > .fi-sidebar-item-label,
+.fi-sidebar
+    .fi-sidebar-item.fi-sidebar-item-has-url:not(.fi-active)
+    > .fi-sidebar-item-btn:hover
+    > .fi-icon,
+.fi-sidebar
+    .fi-sidebar-item.fi-sidebar-item-has-url:not(.fi-active)
+    > .fi-sidebar-item-btn:focus-visible
+    > .fi-sidebar-item-label,
+.fi-sidebar
+    .fi-sidebar-item.fi-sidebar-item-has-url:not(.fi-active)
+    > .fi-sidebar-item-btn:focus-visible
+    > .fi-icon {
+    color: #fff;
+}
+
 .fi-topbar nav {
     background: rgb(255 255 255 / 94%);
     border-block-end-color: rgb(15 23 42 / 8%);
