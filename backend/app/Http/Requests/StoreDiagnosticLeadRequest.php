@@ -48,6 +48,11 @@ class StoreDiagnosticLeadRequest extends FormRequest
                 ]),
             ],
             'source_page' => ['nullable', 'string', 'max:255'],
+            'utm_source' => ['nullable', 'string', 'max:255'],
+            'utm_medium' => ['nullable', 'string', 'max:255'],
+            'utm_campaign' => ['nullable', 'string', 'max:255'],
+            'utm_content' => ['nullable', 'string', 'max:255'],
+            'utm_term' => ['nullable', 'string', 'max:255'],
         ];
     }
 

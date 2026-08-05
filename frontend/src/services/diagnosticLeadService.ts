@@ -2,6 +2,7 @@ import {
   normalizeWebsite,
   type DiagnosticLeadFormValues,
 } from '../components/diagnostic/diagnosticLeadSchema';
+import { clearStoredUtmParameters, getUtmPayload } from './utmService';
 
 type ApiValidationErrors = Record<string, string[]>;
 
@@ -53,6 +54,7 @@ export async function submitDiagnosticLead(
       website: normalizeWebsite(values.website) || undefined,
       revenue_range: values.revenue_range,
       source_page: window.location.pathname,
+      ...getUtmPayload(),
     }),
   }).catch(() => {
     throw new DiagnosticLeadApiError(
@@ -79,6 +81,8 @@ export async function submitDiagnosticLead(
       response.status,
     );
   }
+
+  clearStoredUtmParameters();
 
   return body as DiagnosticLeadResponse;
 }

@@ -28,6 +28,10 @@ async function fillContactStep(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe('navegação e diagnóstico', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+  });
+
   it('marca a rota ativa e controla o menu mobile com aria-expanded', async () => {
     const user = userEvent.setup();
     renderApp('/blog');
@@ -41,6 +45,19 @@ describe('navegação e diagnóstico', () => {
     expect(screen.getByRole('navigation', { name: 'Navegação mobile' })).toBeVisible();
     await user.click(menuButton);
     expect(menuButton).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('preserva as UTMs capturadas durante a navegação interna', async () => {
+    const user = userEvent.setup();
+    renderApp('/?utm_source=google&utm_campaign=lancamento');
+
+    await waitFor(() => {
+      expect(window.sessionStorage.getItem('diagnostic_lead_utms')).toContain('google');
+    });
+    await user.click(screen.getAllByRole('link', { name: 'Metodologia' })[0]);
+
+    expect(window.sessionStorage.getItem('diagnostic_lead_utms')).toContain('google');
+    expect(window.sessionStorage.getItem('diagnostic_lead_utms')).toContain('lancamento');
   });
 
   it('abre e fecha o modal, bloqueia scroll e retorna o foco', async () => {
@@ -75,7 +92,7 @@ describe('navegação e diagnóstico', () => {
       ),
     );
     const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
-    renderApp();
+    renderApp('/?utm_source=google&utm_medium=cpc&utm_campaign=lancamento&utm_content=banner&utm_term=ecommerce');
     await user.click(
       screen.getAllByRole('button', { name: 'Solicitar diagnóstico' })[0],
     );
@@ -97,7 +114,13 @@ describe('navegação e diagnóstico', () => {
       website: 'https://empresa.io',
       revenue_range: '75001_150000',
       source_page: '/',
+      utm_source: 'google',
+      utm_medium: 'cpc',
+      utm_campaign: 'lancamento',
+      utm_content: 'banner',
+      utm_term: 'ecommerce',
     });
+    expect(window.sessionStorage.getItem('diagnostic_lead_utms')).toBeNull();
 
     await user.click(screen.getByRole('button', { name: 'Conversar com nosso time' }));
     expect(openSpy).toHaveBeenCalledWith(
@@ -120,7 +143,7 @@ describe('navegação e diagnóstico', () => {
         { status: 422 },
       ),
     );
-    renderApp();
+    renderApp('/?utm_source=linkedin');
     await user.click(
       screen.getAllByRole('button', { name: 'Solicitar diagnóstico' })[0],
     );
@@ -133,6 +156,7 @@ describe('navegação e diagnóstico', () => {
       expect(screen.getByText('Os dados enviados são inválidos.')).toBeVisible();
     });
     expect(screen.queryByText('Diagnóstico recebido')).not.toBeInTheDocument();
+    expect(window.sessionStorage.getItem('diagnostic_lead_utms')).toContain('linkedin');
     fetchSpy.mockRestore();
   });
 

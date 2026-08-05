@@ -48,6 +48,11 @@ return [
         'deal_source_option_id' => env('PIPEDRIVE_DEAL_SOURCE_OPTION_ID'),
         'deal_source_page_field_key' => env('PIPEDRIVE_DEAL_SOURCE_PAGE_FIELD_KEY'),
         'deal_local_id_field_key' => env('PIPEDRIVE_DEAL_LOCAL_ID_FIELD_KEY'),
+        'deal_utm_source_field_key' => env('PIPEDRIVE_DEAL_UTM_SOURCE_FIELD_KEY'),
+        'deal_utm_medium_field_key' => env('PIPEDRIVE_DEAL_UTM_MEDIUM_FIELD_KEY'),
+        'deal_utm_campaign_field_key' => env('PIPEDRIVE_DEAL_UTM_CAMPAIGN_FIELD_KEY'),
+        'deal_utm_content_field_key' => env('PIPEDRIVE_DEAL_UTM_CONTENT_FIELD_KEY'),
+        'deal_utm_term_field_key' => env('PIPEDRIVE_DEAL_UTM_TERM_FIELD_KEY'),
         'revenue_option_ids' => [
             'up_to_50000' => env('PIPEDRIVE_REVENUE_UP_TO_50000_OPTION_ID'),
             '50001_75000' => env('PIPEDRIVE_REVENUE_50001_75000_OPTION_ID'),
