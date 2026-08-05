@@ -3,6 +3,7 @@ type Props = {
   activeIndex: number;
   onSelect: (index: number) => void;
   label: string;
+  itemLabel?: string;
 };
 
 export function CarouselIndicators({
@@ -10,6 +11,7 @@ export function CarouselIndicators({
   activeIndex,
   onSelect,
   label,
+  itemLabel = 'item',
 }: Props) {
   return (
     <div className="carousel-indicators" aria-label={`Posição do ${label}`}>
@@ -18,7 +20,7 @@ export function CarouselIndicators({
           key={index}
           type="button"
           className={index === activeIndex ? 'is-active' : ''}
-          aria-label={`Ir para item ${index + 1} de ${count}`}
+          aria-label={`Ir para ${itemLabel} ${index + 1} de ${count}`}
           aria-current={index === activeIndex ? 'true' : undefined}
           onClick={() => onSelect(index)}
         />

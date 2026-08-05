@@ -17,6 +17,11 @@ export function CaseCarousel({ items, autoPlayInterval = 6000 }: Props) {
   const [interactionPaused, setInteractionPaused] = useState(false);
   const touchStart = useRef<number | null>(null);
   const resumeTimer = useRef<number | undefined>(undefined);
+  const itemsPerPage = isMobile ? 1 : 2;
+  const pageCount = Math.ceil(items.length / itemsPerPage);
+  const activePage = pageCount > 0
+    ? Math.min(Math.floor(activeIndex / itemsPerPage), pageCount - 1)
+    : 0;
 
   useEffect(() => {
     const media = window.matchMedia('(max-width: 767px)');
@@ -27,9 +32,10 @@ export function CaseCarousel({ items, autoPlayInterval = 6000 }: Props) {
   }, []);
 
   const moveTo = useCallback(
-    (index: number, userInitiated = false) => {
-      if (!items.length) return;
-      setActiveIndex((index + items.length) % items.length);
+    (pageIndex: number, userInitiated = false) => {
+      if (!pageCount) return;
+      const normalizedPage = (pageIndex + pageCount) % pageCount;
+      setActiveIndex(normalizedPage * itemsPerPage);
       if (userInitiated) {
         setInteractionPaused(true);
         window.clearTimeout(resumeTimer.current);
@@ -39,12 +45,12 @@ export function CaseCarousel({ items, autoPlayInterval = 6000 }: Props) {
         );
       }
     },
-    [items.length],
+    [itemsPerPage, pageCount],
   );
 
   useEffect(() => {
     if (
-      items.length <= 1 ||
+      pageCount <= 1 ||
       hovered ||
       focused ||
       interactionPaused ||
@@ -53,11 +59,15 @@ export function CaseCarousel({ items, autoPlayInterval = 6000 }: Props) {
       return;
     }
     const timer = window.setInterval(
-      () => setActiveIndex((current) => (current + 1) % items.length),
+      () => setActiveIndex((current) => {
+        const currentPage = Math.floor(current / itemsPerPage);
+
+        return ((currentPage + 1) % pageCount) * itemsPerPage;
+      }),
       autoPlayInterval,
     );
     return () => window.clearInterval(timer);
-  }, [autoPlayInterval, focused, hovered, interactionPaused, items.length]);
+  }, [autoPlayInterval, focused, hovered, interactionPaused, itemsPerPage, pageCount]);
 
   useEffect(
     () => () => {
@@ -67,11 +77,8 @@ export function CaseCarousel({ items, autoPlayInterval = 6000 }: Props) {
   );
 
   if (!items.length) return null;
-  const visibleItems = isMobile
-    ? [items[activeIndex]]
-    : items.length === 1
-      ? items
-      : [items[activeIndex], items[(activeIndex + 1) % items.length]];
+  const firstVisibleIndex = activePage * itemsPerPage;
+  const visibleItems = items.slice(firstVisibleIndex, firstVisibleIndex + itemsPerPage);
 
   return (
     <div
@@ -89,11 +96,11 @@ export function CaseCarousel({ items, autoPlayInterval = 6000 }: Props) {
       onKeyDown={(event) => {
         if (event.key === 'ArrowLeft') {
           event.preventDefault();
-          moveTo(activeIndex - 1, true);
+          moveTo(activePage - 1, true);
         }
         if (event.key === 'ArrowRight') {
           event.preventDefault();
-          moveTo(activeIndex + 1, true);
+          moveTo(activePage + 1, true);
         }
       }}
       onTouchStart={(event) => {
@@ -104,7 +111,7 @@ export function CaseCarousel({ items, autoPlayInterval = 6000 }: Props) {
         const distance = (event.changedTouches[0]?.clientX ?? touchStart.current) -
           touchStart.current;
         if (Math.abs(distance) > 45) {
-          moveTo(activeIndex + (distance < 0 ? 1 : -1), true);
+          moveTo(activePage + (distance < 0 ? 1 : -1), true);
         }
         touchStart.current = null;
       }}
@@ -118,18 +125,19 @@ export function CaseCarousel({ items, autoPlayInterval = 6000 }: Props) {
           />
         ))}
       </div>
-      {items.length > 1 ? (
+      {pageCount > 1 ? (
         <div className="carousel-footer">
           <CarouselIndicators
-            count={items.length}
-            activeIndex={activeIndex}
+            count={pageCount}
+            activeIndex={activePage}
             onSelect={(index) => moveTo(index, true)}
             label="carrossel de cases"
+            itemLabel={isMobile ? 'item' : 'página'}
           />
           <CarouselControls
             label="case"
-            onPrevious={() => moveTo(activeIndex - 1, true)}
-            onNext={() => moveTo(activeIndex + 1, true)}
+            onPrevious={() => moveTo(activePage - 1, true)}
+            onNext={() => moveTo(activePage + 1, true)}
           />
         </div>
       ) : null}

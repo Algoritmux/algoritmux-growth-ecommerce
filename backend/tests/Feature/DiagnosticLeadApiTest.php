@@ -40,6 +40,11 @@ class DiagnosticLeadApiTest extends TestCase
         $this->assertSame('5512999999999', $lead->whatsapp);
         $this->assertSame('pessoa@example.test', $lead->email);
         $this->assertSame('https://empresa.com', $lead->website);
+        $this->assertSame('google', $lead->utm_source);
+        $this->assertSame('cpc', $lead->utm_medium);
+        $this->assertSame('lancamento-2026', $lead->utm_campaign);
+        $this->assertSame('banner-principal', $lead->utm_content);
+        $this->assertSame('consultoria-ecommerce', $lead->utm_term);
         $this->assertSame('new', $lead->status);
         $this->assertSame(DiagnosticLead::PIPEDRIVE_SYNC_SYNCED, $lead->pipedrive_sync_status);
         $this->assertSame(101, $lead->pipedrive_organization_id);
@@ -62,6 +67,11 @@ class DiagnosticLeadApiTest extends TestCase
             && $request['custom_fields']['source_field'] === 64
             && $request['custom_fields']['source_page_field'] === '/'
             && $request['custom_fields']['local_id_field'] === $lead->public_id
+            && $request['custom_fields']['utm_source_field'] === 'google'
+            && $request['custom_fields']['utm_medium_field'] === 'cpc'
+            && $request['custom_fields']['utm_campaign_field'] === 'lancamento-2026'
+            && $request['custom_fields']['utm_content_field'] === 'banner-principal'
+            && $request['custom_fields']['utm_term_field'] === 'consultoria-ecommerce'
             && ! array_key_exists('revenue_field', $request->data())
             && ! array_key_exists('source_field', $request->data())
             && ! array_key_exists('source_page_field', $request->data())
@@ -95,6 +105,54 @@ class DiagnosticLeadApiTest extends TestCase
                 'company_name',
                 'revenue_range',
             ]);
+    }
+
+    public function test_it_rejects_utm_values_longer_than_255_characters(): void
+    {
+        $response = $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            'utm_source' => str_repeat('a', 256),
+            'utm_medium' => str_repeat('a', 256),
+            'utm_campaign' => str_repeat('a', 256),
+            'utm_content' => str_repeat('a', 256),
+            'utm_term' => str_repeat('a', 256),
+        ]);
+
+        $response->assertUnprocessable()->assertJsonValidationErrors([
+            'utm_source',
+            'utm_medium',
+            'utm_campaign',
+            'utm_content',
+            'utm_term',
+        ]);
+        $this->assertDatabaseCount('diagnostic_leads', 0);
+    }
+
+    public function test_it_accepts_missing_utms_and_persists_them_as_null(): void
+    {
+        $this->configurePipedrive();
+        Http::fakeSequence()
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['id' => 101]])
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['id' => 202]])
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['id' => 303]]);
+        $payload = $this->leadPayload();
+
+        foreach (['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as $field) {
+            unset($payload[$field]);
+        }
+
+        $this->postJson('/api/v1/leads/diagnostic', $payload)->assertCreated();
+
+        $lead = DiagnosticLead::firstOrFail();
+        $this->assertNull($lead->utm_source);
+        $this->assertNull($lead->utm_medium);
+        $this->assertNull($lead->utm_campaign);
+        $this->assertNull($lead->utm_content);
+        $this->assertNull($lead->utm_term);
     }
 
     public function test_it_normalizes_and_accepts_flexible_public_websites(): void
@@ -314,6 +372,11 @@ class DiagnosticLeadApiTest extends TestCase
             'pipedrive_organization_id' => 101,
             'pipedrive_person_id' => 202,
             'pipedrive_sync_status' => DiagnosticLead::PIPEDRIVE_SYNC_FAILED,
+            'utm_source' => 'newsletter',
+            'utm_medium' => 'email',
+            'utm_campaign' => 'reativacao',
+            'utm_content' => 'cta-rodape',
+            'utm_term' => 'clientes-inativos',
         ]);
 
         Http::fakeSequence()
@@ -327,11 +390,46 @@ class DiagnosticLeadApiTest extends TestCase
         $lead->refresh();
         $this->assertSame(303, $lead->pipedrive_deal_id);
         $this->assertSame(DiagnosticLead::PIPEDRIVE_SYNC_SYNCED, $lead->pipedrive_sync_status);
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
+            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/deals')
+            && $request['custom_fields']['utm_source_field'] === 'newsletter'
+            && $request['custom_fields']['utm_medium_field'] === 'email'
+            && $request['custom_fields']['utm_campaign_field'] === 'reativacao'
+            && $request['custom_fields']['utm_content_field'] === 'cta-rodape'
+            && $request['custom_fields']['utm_term_field'] === 'clientes-inativos');
 
         $this->artisan('pipedrive:sync-leads', ['--limit' => 1])
             ->expectsOutput('Pipedrive sync complete: processed=0 synced=0 failed=0.')
             ->assertExitCode(0);
         Http::assertSentCount(2);
+    }
+
+    public function test_it_does_not_send_empty_utm_values_to_pipedrive(): void
+    {
+        $this->configurePipedrive();
+        $lead = $this->createLead([
+            'pipedrive_organization_id' => 101,
+            'pipedrive_person_id' => 202,
+            'pipedrive_sync_status' => DiagnosticLead::PIPEDRIVE_SYNC_FAILED,
+            'utm_source' => '',
+            'utm_medium' => null,
+            'utm_campaign' => '   ',
+        ]);
+        Http::fakeSequence()
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['id' => 303]]);
+
+        $this->artisan('pipedrive:sync-leads', ['--limit' => 1])->assertExitCode(0);
+
+        $lead->refresh();
+        $this->assertSame(DiagnosticLead::PIPEDRIVE_SYNC_SYNCED, $lead->pipedrive_sync_status);
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
+            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/deals')
+            && ! array_key_exists('utm_source_field', $request['custom_fields'])
+            && ! array_key_exists('utm_medium_field', $request['custom_fields'])
+            && ! array_key_exists('utm_campaign_field', $request['custom_fields'])
+            && ! array_key_exists('utm_content_field', $request['custom_fields'])
+            && ! array_key_exists('utm_term_field', $request['custom_fields']));
     }
 
     public function test_it_creates_a_deal_without_custom_fields_when_optional_configuration_is_absent(): void
@@ -375,6 +473,11 @@ class DiagnosticLeadApiTest extends TestCase
             'deal_source_option_id' => 64,
             'deal_source_page_field_key' => 'source_page_field',
             'deal_local_id_field_key' => 'local_id_field',
+            'deal_utm_source_field_key' => 'utm_source_field',
+            'deal_utm_medium_field_key' => 'utm_medium_field',
+            'deal_utm_campaign_field_key' => 'utm_campaign_field',
+            'deal_utm_content_field_key' => 'utm_content_field',
+            'deal_utm_term_field_key' => 'utm_term_field',
             'revenue_option_ids' => [
                 'up_to_50000' => 58,
                 '50001_75000' => 59,
@@ -399,6 +502,11 @@ class DiagnosticLeadApiTest extends TestCase
             'website' => 'empresa.com',
             'revenue_range' => '75001_150000',
             'source_page' => '/',
+            'utm_source' => 'google',
+            'utm_medium' => 'cpc',
+            'utm_campaign' => 'lancamento-2026',
+            'utm_content' => 'banner-principal',
+            'utm_term' => 'consultoria-ecommerce',
         ];
     }
 

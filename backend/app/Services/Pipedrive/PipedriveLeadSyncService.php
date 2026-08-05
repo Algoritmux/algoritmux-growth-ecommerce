@@ -154,6 +154,11 @@ class PipedriveLeadSyncService
         $this->addOptionalField($customFields, 'deal_source_field_key', $this->optionalInteger('deal_source_option_id'));
         $this->addOptionalField($customFields, 'deal_source_page_field_key', $lead->source_page);
         $this->addOptionalField($customFields, 'deal_local_id_field_key', $lead->public_id);
+        $this->addOptionalField($customFields, 'deal_utm_source_field_key', $lead->utm_source);
+        $this->addOptionalField($customFields, 'deal_utm_medium_field_key', $lead->utm_medium);
+        $this->addOptionalField($customFields, 'deal_utm_campaign_field_key', $lead->utm_campaign);
+        $this->addOptionalField($customFields, 'deal_utm_content_field_key', $lead->utm_content);
+        $this->addOptionalField($customFields, 'deal_utm_term_field_key', $lead->utm_term);
 
         if ($customFields !== []) {
             $payload['custom_fields'] = $customFields;
