@@ -33,9 +33,13 @@ class PipedriveLeadSyncService
         try {
             $this->revenueOptionId($lead);
 
-            $organizationId = $lead->pipedrive_organization_id ?: $this->findOrCreateOrganization($lead);
+            $organizationId = $lead->pipedrive_organization_id;
 
-            if (! $lead->pipedrive_organization_id) {
+            if (! $organizationId && filled($lead->company_name)) {
+                $organizationId = $this->findOrCreateOrganization($lead);
+            }
+
+            if ($organizationId && ! $lead->pipedrive_organization_id) {
                 $lead->forceFill(['pipedrive_organization_id' => $organizationId])->save();
             }
 
@@ -90,51 +94,73 @@ class PipedriveLeadSyncService
         return $this->createdId($this->client()->post('organizations', $payload));
     }
 
-    private function findOrCreatePerson(DiagnosticLead $lead, int $organizationId): int
+    private function findOrCreatePerson(DiagnosticLead $lead, ?int $organizationId): int
     {
-        $personId = $this->firstSearchResultId('persons/search', [
-            'term' => $lead->email,
-            'fields' => 'email',
-            'exact_match' => true,
-            'limit' => 1,
-        ]);
+        $personId = null;
 
-        $personId ??= $this->firstSearchResultId('persons/search', [
-            'term' => $lead->whatsapp,
-            'fields' => 'phone',
-            'exact_match' => true,
-            'limit' => 1,
-        ]);
+        if (filled($lead->email)) {
+            $personId = $this->firstSearchResultId('persons/search', [
+                'term' => $lead->email,
+                'fields' => 'email',
+                'exact_match' => true,
+                'limit' => 1,
+            ]);
+        }
+
+        if (! $personId && filled($lead->whatsapp)) {
+            $personId = $this->firstSearchResultId('persons/search', [
+                'term' => $lead->whatsapp,
+                'fields' => 'phone',
+                'exact_match' => true,
+                'limit' => 1,
+            ]);
+        }
 
         if ($personId) {
             return $personId;
         }
 
-        return $this->createdId($this->client()->post('persons', [
+        $payload = [
             'name' => $lead->name,
-            'org_id' => $organizationId,
-            'emails' => [[
+        ];
+
+        if ($organizationId) {
+            $payload['org_id'] = $organizationId;
+        }
+
+        if (filled($lead->email)) {
+            $payload['emails'] = [[
                 'value' => $lead->email,
                 'primary' => true,
-            ]],
-            'phones' => [[
+            ]];
+        }
+
+        if (filled($lead->whatsapp)) {
+            $payload['phones'] = [[
                 'value' => $lead->whatsapp,
                 'primary' => true,
-            ]],
-        ]));
+            ]];
+        }
+
+        return $this->createdId($this->client()->post('persons', $payload));
     }
 
-    private function findOrCreateDeal(DiagnosticLead $lead, int $organizationId, int $personId): int
+    private function findOrCreateDeal(DiagnosticLead $lead, ?int $organizationId, int $personId): int
     {
         $title = $this->dealTitle($lead);
-        $dealId = $this->firstSearchResultId('deals/search', [
+        $search = [
             'term' => $title,
             'fields' => 'title',
             'exact_match' => true,
             'person_id' => $personId,
-            'organization_id' => $organizationId,
             'limit' => 1,
-        ]);
+        ];
+
+        if ($organizationId) {
+            $search['organization_id'] = $organizationId;
+        }
+
+        $dealId = $this->firstSearchResultId('deals/search', $search);
 
         if ($dealId) {
             return $dealId;
@@ -143,11 +169,14 @@ class PipedriveLeadSyncService
         $payload = [
             'title' => $title,
             'person_id' => $personId,
-            'org_id' => $organizationId,
             'pipeline_id' => (int) config('services.pipedrive.pipeline_id'),
             'stage_id' => (int) config('services.pipedrive.stage_id'),
             'owner_id' => (int) config('services.pipedrive.owner_id'),
         ];
+
+        if ($organizationId) {
+            $payload['org_id'] = $organizationId;
+        }
 
         $customFields = [];
         $this->addOptionalField($customFields, 'deal_revenue_field_key', $this->revenueOptionId($lead));
@@ -306,7 +335,7 @@ class PipedriveLeadSyncService
 
     private function revenueOptionId(DiagnosticLead $lead): ?int
     {
-        if (! filled(config('services.pipedrive.deal_revenue_field_key'))) {
+        if (! filled($lead->revenue_range) || ! filled(config('services.pipedrive.deal_revenue_field_key'))) {
             return null;
         }
 

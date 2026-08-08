@@ -27,16 +27,16 @@ class StoreDiagnosticLeadRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'whatsapp' => ['required', 'string', 'regex:/^\d{10,20}$/'],
-            'email' => ['required', 'string', 'email:rfc', 'max:254'],
-            'company_name' => ['required', 'string', 'max:255'],
+            'whatsapp' => ['nullable', 'string', 'regex:/^(?:55)?\d{10,11}$/'],
+            'email' => ['nullable', 'string', 'email:rfc', 'max:254'],
+            'company_name' => ['nullable', 'string', 'max:255'],
             'website' => ['nullable', 'string', 'max:255', function (string $attribute, mixed $value, \Closure $fail): void {
                 if (! WebsiteNormalizer::isValid($value)) {
                     $fail('Informe um site válido.');
                 }
             }],
             'revenue_range' => [
-                'required',
+                'nullable',
                 'string',
                 Rule::in([
                     'up_to_50000',
@@ -58,12 +58,32 @@ class StoreDiagnosticLeadRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $name = $this->input('name');
         $email = $this->input('email');
+        $companyName = $this->input('company_name');
+        $revenueRange = $this->input('revenue_range');
         $website = $this->input('website');
+        $whatsappInput = $this->input('whatsapp');
+        $whatsappDigits = preg_replace('/\D+/', '', (string) $whatsappInput);
 
         $this->merge([
-            'email' => is_string($email) ? mb_strtolower(trim($email)) : $email,
-            'whatsapp' => preg_replace('/\D+/', '', (string) $this->input('whatsapp')),
+            'name' => is_string($name) ? trim($name) : $name,
+            'email' => is_string($email)
+                ? (trim($email) !== '' ? mb_strtolower(trim($email)) : null)
+                : $email,
+            'whatsapp' => is_string($whatsappInput)
+                ? match (true) {
+                    trim($whatsappInput) === '' => null,
+                    $whatsappDigits !== '' => $whatsappDigits,
+                    default => trim($whatsappInput),
+                }
+                : $whatsappInput,
+            'company_name' => is_string($companyName)
+                ? (trim($companyName) !== '' ? trim($companyName) : null)
+                : $companyName,
+            'revenue_range' => is_string($revenueRange)
+                ? (trim($revenueRange) !== '' ? trim($revenueRange) : null)
+                : $revenueRange,
             'website' => WebsiteNormalizer::normalize($website),
         ]);
     }

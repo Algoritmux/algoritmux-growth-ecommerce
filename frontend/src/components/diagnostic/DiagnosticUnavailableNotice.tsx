@@ -8,7 +8,10 @@ export function DiagnosticUnavailableNotice({
   companyName: string;
 }) {
   const openWhatsApp = () => {
-    const message = `Olá! Acabei de solicitar meu diagnóstico de performance para a empresa ${companyName}. Gostaria de agendar a análise técnica de 15 minutos.`;
+    const companyContext = companyName.trim()
+      ? ` para a empresa ${companyName.trim()}`
+      : '';
+    const message = `Olá! Acabei de solicitar meu diagnóstico de performance${companyContext}. Gostaria de agendar a análise técnica de 15 minutos.`;
     window.open(
       `https://wa.me/5512992474969?text=${encodeURIComponent(message)}`,
       '_blank',
@@ -21,7 +24,6 @@ export function DiagnosticUnavailableNotice({
       <span className="diagnostic-unavailable__icon" aria-hidden="true">
         ✓
       </span>
-      <p className="diagnostic-kicker">Etapa 3 de 3</p>
       <h2 id="diagnostic-title">Diagnóstico recebido</h2>
       <p className="diagnostic-unavailable__message">
         Obrigado! Nosso time receberá seus dados para preparar a próxima conversa.

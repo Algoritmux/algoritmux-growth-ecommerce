@@ -125,18 +125,17 @@ export function HomePage() {
           <div className="hero-content">
             <Badge>Growth Marketing</Badge>
             <h1>
-              Crescimento não é ação isolada. <span>É um sistema.</span>
+              Seu marketing gera movimento, <span>mas gera venda?</span>
             </h1>
             <p>
-              Estruturamos e operamos um sistema previsível que conecta
-              Marketing, Vendas e Inteligência de Dados para escalar empresas
-              que já vendem.{" "}
+              Conectamos marketing, vendas e inteligência de dados em um sistema
+              previsível, e escalamos o que já funciona no seu negócio.{" "}
             </p>
             <div className="hero-actions">
               <Button type="button" size="lg" arrow onClick={openDiagnostic}>
-                Solicitar diagnóstico de performance
+                Fale conosco e receba um diagnóstico gratuito
               </Button>
-              <small>Visão de negócio antes da execução.</small>
+              <small>Gratuito e sem compromisso · resposta em até 24h</small>
             </div>
           </div>
           <div className="hero-visual">
@@ -158,8 +157,10 @@ export function HomePage() {
             eyebrow="O cenário atual"
             title={
               <>
-                O problema não é falta de leads. É a falta de um sistema que{' '}
-                <span className="gradient-text">transforma marketing em vendas.</span>
+                O problema não é falta de leads. É a falta de um sistema que{" "}
+                <span className="gradient-text">
+                  transforma marketing em vendas.
+                </span>
               </>
             }
             description="Sua empresa investe em campanhas, faz testes e tenta de tudo. Mas sem uma lógica conectando marketing e vendas, o resultado é sempre o mesmo: crescimento instável e imprevisível."
@@ -305,7 +306,7 @@ export function HomePage() {
           <div className="cro-section__heading">
             <Badge>INTELIGÊNCIA DE MARKETING & CRO</Badge>
             <h2>
-              Nenhum sistema de marketing sobrevive a{' '}
+              Nenhum sistema de marketing sobrevive a{" "}
               <span className="gradient-text">uma jornada com atritos.</span>
             </h2>
           </div>
@@ -393,7 +394,7 @@ export function HomePage() {
             eyebrow="Modelos de aceleração"
             title={
               <>
-                Uma estrutura para cada{' '}
+                Uma estrutura para cada{" "}
                 <span className="gradient-text">estágio de crescimento.</span>
               </>
             }
