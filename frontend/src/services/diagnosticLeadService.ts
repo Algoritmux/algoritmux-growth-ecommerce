@@ -1,5 +1,5 @@
 import {
-  normalizeWebsite,
+  normalizeWhatsApp,
   type DiagnosticLeadFormValues,
 } from '../components/diagnostic/diagnosticLeadSchema';
 import { clearStoredUtmParameters, getUtmPayload } from './utmService';
@@ -48,11 +48,10 @@ export async function submitDiagnosticLead(
     },
     body: JSON.stringify({
       name: values.name.trim(),
-      whatsapp: values.whatsapp.replace(/\D/g, ''),
-      email: values.email.trim().toLowerCase(),
-      company_name: values.company_name.trim(),
-      website: normalizeWebsite(values.website) || undefined,
-      revenue_range: values.revenue_range,
+      whatsapp: normalizeWhatsApp(values.whatsapp) || null,
+      email: values.email.trim().toLowerCase() || null,
+      company_name: values.company_name.trim() || null,
+      revenue_range: values.revenue_range || null,
       source_page: window.location.pathname,
       ...getUtmPayload(),
     }),

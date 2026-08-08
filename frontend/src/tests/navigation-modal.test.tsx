@@ -11,20 +11,15 @@ function renderApp(path = '/') {
   );
 }
 
-async function fillBusinessStep(user: ReturnType<typeof userEvent.setup>) {
+async function fillCompleteDiagnostic(user: ReturnType<typeof userEvent.setup>) {
+  await user.type(screen.getByLabelText('Nome'), 'Pessoa Teste');
+  await user.type(screen.getByLabelText('WhatsApp'), '+55 18 99999-9999');
   await user.type(screen.getByLabelText('Nome da empresa'), 'Empresa Teste');
+  await user.type(screen.getByLabelText('E-mail'), 'PESSOA@EXAMPLE.TEST');
   await user.selectOptions(
-    screen.getByLabelText('Faturamento mensal'),
+    screen.getByLabelText('Faturamento'),
     '75001_150000',
   );
-  await user.type(screen.getByLabelText('Site da empresa'), 'empresa.io');
-  await user.click(screen.getByRole('button', { name: 'Continuar' }));
-}
-
-async function fillContactStep(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(screen.getByLabelText('Seu nome'), 'Pessoa Teste');
-  await user.type(screen.getByLabelText('WhatsApp'), '12999999999');
-  await user.type(screen.getByLabelText('E-mail corporativo'), 'PESSOA@EXAMPLE.TEST');
 }
 
 describe('navegação e diagnóstico', () => {
@@ -80,6 +75,28 @@ describe('navegação e diagnóstico', () => {
     expect(opener).toHaveFocus();
   });
 
+  it('exibe todos os campos em uma única etapa sem website ou navegação', async () => {
+    const user = userEvent.setup();
+    renderApp();
+
+    await user.click(
+      screen.getAllByRole('button', { name: 'Solicitar diagnóstico' })[0],
+    );
+
+    expect(screen.getByLabelText('Nome')).toBeVisible();
+    expect(screen.getByLabelText('WhatsApp')).toBeVisible();
+    expect(screen.getByLabelText('Nome da empresa')).toBeVisible();
+    expect(screen.getByLabelText('E-mail')).toBeVisible();
+    expect(screen.getByLabelText('Faturamento')).toBeVisible();
+    expect(screen.queryByLabelText('Site da empresa')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Etapa \d de 3/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Continuar' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Voltar' })).toBeNull();
+    expect(
+      screen.getByRole('button', { name: 'Enviar diagnóstico' }),
+    ).toBeVisible();
+  });
+
   it('envia o diagnóstico, normaliza o payload e mostra o agradecimento', async () => {
     const user = userEvent.setup();
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
@@ -97,8 +114,7 @@ describe('navegação e diagnóstico', () => {
       screen.getAllByRole('button', { name: 'Solicitar diagnóstico' })[0],
     );
 
-    await fillBusinessStep(user);
-    await fillContactStep(user);
+    await fillCompleteDiagnostic(user);
     await user.click(screen.getByRole('button', { name: 'Enviar diagnóstico' }));
 
     await waitFor(() => {
@@ -109,9 +125,9 @@ describe('navegação e diagnóstico', () => {
       expect.objectContaining({ method: 'POST' }),
     );
     expect(JSON.parse(String(fetchSpy.mock.calls[0][1]?.body))).toMatchObject({
-      whatsapp: '12999999999',
+      whatsapp: '5518999999999',
       email: 'pessoa@example.test',
-      website: 'https://empresa.io',
+      company_name: 'Empresa Teste',
       revenue_range: '75001_150000',
       source_page: '/',
       utm_source: 'google',
@@ -120,6 +136,9 @@ describe('navegação e diagnóstico', () => {
       utm_content: 'banner',
       utm_term: 'ecommerce',
     });
+    expect(JSON.parse(String(fetchSpy.mock.calls[0][1]?.body))).not.toHaveProperty(
+      'website',
+    );
     expect(window.sessionStorage.getItem('diagnostic_lead_utms')).toBeNull();
 
     await user.click(screen.getByRole('button', { name: 'Conversar com nosso time' }));
@@ -130,6 +149,42 @@ describe('navegação e diagnóstico', () => {
     );
     fetchSpy.mockRestore();
     openSpy.mockRestore();
+  });
+
+  it('envia somente o nome uma única vez e converte opcionais vazios em null', async () => {
+    const user = userEvent.setup();
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          message: 'Lead de diagnóstico recebido com sucesso.',
+          data: { public_id: 'name-only-id', status: 'new' },
+        }),
+        { status: 201 },
+      ),
+    );
+    renderApp();
+    await user.click(
+      screen.getAllByRole('button', { name: 'Solicitar diagnóstico' })[0],
+    );
+    await user.type(screen.getByLabelText('Nome'), 'Pessoa Sem Atrito');
+
+    const submitButton = screen.getByRole('button', {
+      name: 'Enviar diagnóstico',
+    });
+    await user.dblClick(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Diagnóstico recebido')).toBeVisible();
+    });
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(String(fetchSpy.mock.calls[0][1]?.body))).toMatchObject({
+      name: 'Pessoa Sem Atrito',
+      whatsapp: null,
+      email: null,
+      company_name: null,
+      revenue_range: null,
+    });
+    fetchSpy.mockRestore();
   });
 
   it('mostra os erros retornados pela API sem avançar para o agradecimento', async () => {
@@ -148,8 +203,8 @@ describe('navegação e diagnóstico', () => {
       screen.getAllByRole('button', { name: 'Solicitar diagnóstico' })[0],
     );
 
-    await fillBusinessStep(user);
-    await fillContactStep(user);
+    await user.type(screen.getByLabelText('Nome'), 'Pessoa Teste');
+    await user.type(screen.getByLabelText('E-mail'), 'pessoa@example.test');
     await user.click(screen.getByRole('button', { name: 'Enviar diagnóstico' }));
 
     await waitFor(() => {
@@ -171,7 +226,9 @@ describe('navegação e diagnóstico', () => {
       expect(link.rel).toContain('noreferrer');
     });
     expect(
-      screen.getByRole('button', { name: 'Solicitar diagnóstico de performance' }),
+      screen.getByRole('button', {
+        name: 'Fale conosco e receba um diagnóstico gratuito',
+      }),
     ).toHaveClass('button--primary');
   });
 });

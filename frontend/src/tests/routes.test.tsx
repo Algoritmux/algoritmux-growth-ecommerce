@@ -33,8 +33,8 @@ describe('rotas públicas', () => {
   });
 
   it.each([
-    ['/', /Crescimento não é ação isolada/i],
-    ['/index.html', /Crescimento não é ação isolada/i],
+    ['/', /Seu marketing gera movimento, mas gera venda\?/i],
+    ['/index.html', /Seu marketing gera movimento, mas gera venda\?/i],
     ['/metodologia.html', /A Metodologia Algoritmux/i],
     ['/equipe.html', /Especialistas multidisciplinares/i],
     ['/blog', /Inteligência de Growth & Vendas/i],
@@ -47,7 +47,7 @@ describe('rotas públicas', () => {
     renderRoute('/index.html');
     expect(
       screen.getByText(
-        'Estruturamos e operamos um sistema previsível que conecta Marketing, Vendas e Inteligência de Dados para escalar empresas que já vendem.',
+        'Conectamos marketing, vendas e inteligência de dados em um sistema previsível, e escalamos o que já funciona no seu negócio.',
       ),
     ).toBeVisible();
   });
@@ -95,7 +95,7 @@ describe('rotas públicas', () => {
     expect(
       await screen.findByRole('heading', {
         level: 1,
-        name: /Crescimento não é ação isolada/i,
+        name: /Seu marketing gera movimento, mas gera venda\?/i,
       }),
     ).toBeVisible();
   });

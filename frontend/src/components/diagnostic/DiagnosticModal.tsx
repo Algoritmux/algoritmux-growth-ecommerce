@@ -7,9 +7,7 @@ import {
   DiagnosticLeadApiError,
   submitDiagnosticLead,
 } from '../../services/diagnosticLeadService';
-import { DiagnosticBusinessStep } from './DiagnosticBusinessStep';
-import { DiagnosticContactStep } from './DiagnosticContactStep';
-import { DiagnosticStepIndicator } from './DiagnosticStepIndicator';
+import { DiagnosticLeadForm } from './DiagnosticLeadForm';
 import { DiagnosticUnavailableNotice } from './DiagnosticUnavailableNotice';
 import {
   diagnosticLeadSchema,
@@ -22,7 +20,7 @@ type Props = {
 };
 
 export function DiagnosticModal({ isOpen, onClose }: Props) {
-  const [step, setStep] = useState(1);
+  const [isComplete, setIsComplete] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const form = useForm<DiagnosticLeadFormValues>({
     resolver: zodResolver(diagnosticLeadSchema),
@@ -31,12 +29,11 @@ export function DiagnosticModal({ isOpen, onClose }: Props) {
       whatsapp: '',
       email: '',
       company_name: '',
-      website: '',
-      revenue_range: undefined,
+      revenue_range: '',
     },
   });
   const close = useCallback(() => {
-    setStep(1);
+    setIsComplete(false);
     setSubmissionError(null);
     form.reset();
     onClose();
@@ -44,25 +41,12 @@ export function DiagnosticModal({ isOpen, onClose }: Props) {
   const dialogRef = useModalAccessibility(isOpen, close);
   useBodyScrollLock(isOpen);
 
-  const moveToContact = async () => {
-    const isBusinessStepValid = await form.trigger([
-      'company_name',
-      'website',
-      'revenue_range',
-    ]);
-
-    if (isBusinessStepValid) {
-      setSubmissionError(null);
-      setStep(2);
-    }
-  };
-
   const submit = form.handleSubmit(async (values) => {
     setSubmissionError(null);
 
     try {
       await submitDiagnosticLead(values);
-      setStep(3);
+      setIsComplete(true);
     } catch (error) {
       if (error instanceof DiagnosticLeadApiError) {
         Object.entries(error.fieldErrors ?? {}).forEach(([field, messages]) => {
@@ -104,19 +88,9 @@ export function DiagnosticModal({ isOpen, onClose }: Props) {
           ×
         </button>
         <FormProvider {...form}>
-          <DiagnosticStepIndicator step={step} />
-          {step < 3 ? (
+          {!isComplete ? (
             <form className="diagnostic-form" onSubmit={submit} noValidate>
-              {step === 1 ? <DiagnosticBusinessStep onNext={moveToContact} /> : null}
-              {step === 2 ? (
-                <DiagnosticContactStep
-                  onBack={() => {
-                    setSubmissionError(null);
-                    setStep(1);
-                  }}
-                  isSubmitting={form.formState.isSubmitting}
-                />
-              ) : null}
+              <DiagnosticLeadForm isSubmitting={form.formState.isSubmitting} />
               {submissionError ? (
                 <p className="diagnostic-form__error" role="alert">
                   {submissionError}
@@ -124,7 +98,7 @@ export function DiagnosticModal({ isOpen, onClose }: Props) {
               ) : null}
             </form>
           ) : null}
-          {step === 3 ? (
+          {isComplete ? (
             <DiagnosticUnavailableNotice
               companyName={form.getValues('company_name')}
               onClose={close}

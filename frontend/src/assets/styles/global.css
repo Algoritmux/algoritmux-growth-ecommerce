@@ -511,8 +511,8 @@ select:focus-visible,
 }
 
 .home-hero .hero-grid {
-  gap: clamp(1rem, 3vw, 3rem);
-  grid-template-columns: minmax(0, 0.86fr) minmax(440px, 1.14fr);
+  gap: clamp(2rem, 4vw, 4.25rem);
+  grid-template-columns: minmax(0, 1.08fr) minmax(440px, 0.92fr);
   text-align: left;
 }
 
@@ -557,7 +557,11 @@ select:focus-visible,
 }
 
 .home-hero h1 {
-  font-size: clamp(3rem, 5.2vw, 5.15rem);
+  max-width: 640px;
+  font-size: clamp(3rem, 4.8vw, 5rem);
+  line-height: 1.03;
+  letter-spacing: -0.055em;
+  text-wrap: balance;
 }
 
 .hero-content > p {
@@ -2218,7 +2222,7 @@ select:focus-visible,
 
 .diagnostic-modal {
   position: relative;
-  width: min(560px, 100%);
+  width: min(720px, 100%);
   max-height: calc(100vh - 2.5rem);
   padding: clamp(1.5rem, 5vw, 2.5rem);
   overflow-y: auto;
@@ -2247,38 +2251,6 @@ select:focus-visible,
   font-size: 1.5rem;
 }
 
-.diagnostic-steps {
-  display: flex;
-  margin: 0 0 2rem;
-  padding: 0;
-  gap: 0.5rem;
-  list-style: none;
-}
-
-.diagnostic-steps li {
-  flex: 1;
-}
-
-.diagnostic-steps li::after {
-  display: block;
-  height: 3px;
-  border-radius: 99px;
-  background: #2e3141;
-  content: "";
-}
-
-.diagnostic-steps li.is-active::after {
-  background: var(--color-cta);
-}
-
-.diagnostic-steps span {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-}
-
 .diagnostic-form,
 .diagnostic-unavailable {
   display: grid;
@@ -2290,12 +2262,20 @@ select:focus-visible,
   gap: 1.1rem;
 }
 
-.diagnostic-kicker {
-  color: var(--color-accent) !important;
-  font-size: 0.65rem !important;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+.diagnostic-form__fields {
+  display: grid;
+  gap: 0.9rem 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.diagnostic-form__field {
+  display: grid;
+  align-content: start;
+  gap: 0.45rem;
+}
+
+.diagnostic-form__field--wide {
+  grid-column: 1 / -1;
 }
 
 .diagnostic-form h2,
@@ -2346,11 +2326,19 @@ select:focus-visible,
   font-weight: 700;
 }
 
+.diagnostic-form__field > .diagnostic-form__error {
+  margin: 0;
+}
+
 .diagnostic-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+}
+
+.diagnostic-actions--submit {
+  justify-content: flex-end;
 }
 
 .diagnostic-unavailable {
