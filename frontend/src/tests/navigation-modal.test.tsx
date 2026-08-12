@@ -17,7 +17,7 @@ async function fillCompleteDiagnostic(user: ReturnType<typeof userEvent.setup>) 
   await user.type(screen.getByLabelText('Nome da empresa'), 'Empresa Teste');
   await user.type(screen.getByLabelText('E-mail'), 'PESSOA@EXAMPLE.TEST');
   await user.selectOptions(
-    screen.getByLabelText('Faturamento'),
+    screen.getByLabelText('Faturamento mensal'),
     '75001_150000',
   );
 }
@@ -87,7 +87,7 @@ describe('navegação e diagnóstico', () => {
     expect(screen.getByLabelText('WhatsApp')).toBeVisible();
     expect(screen.getByLabelText('Nome da empresa')).toBeVisible();
     expect(screen.getByLabelText('E-mail')).toBeVisible();
-    expect(screen.getByLabelText('Faturamento')).toBeVisible();
+    expect(screen.getByLabelText('Faturamento mensal')).toBeVisible();
     expect(screen.queryByLabelText('Site da empresa')).not.toBeInTheDocument();
     expect(screen.queryByText(/Etapa \d de 3/)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Continuar' })).toBeNull();
