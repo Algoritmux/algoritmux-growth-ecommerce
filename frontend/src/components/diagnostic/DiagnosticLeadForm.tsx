@@ -117,7 +117,7 @@ export function DiagnosticLeadForm({ isSubmitting }: { isSubmitting: boolean }) 
 
         <div className="diagnostic-form__field diagnostic-form__field--wide">
           <label htmlFor="diagnostic-revenue-range">
-            Faturamento
+            Faturamento mensal
             <select
               {...register('revenue_range')}
               id="diagnostic-revenue-range"
