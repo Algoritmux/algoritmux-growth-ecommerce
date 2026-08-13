@@ -20,7 +20,7 @@ export function DiagnosticLeadForm({ isSubmitting }: { isSubmitting: boolean }) 
       <div className="diagnostic-form__fields">
         <div className="diagnostic-form__field">
           <label htmlFor="diagnostic-name">
-            Nome
+            Nome *
             <input
               {...register('name')}
               id="diagnostic-name"
@@ -40,7 +40,7 @@ export function DiagnosticLeadForm({ isSubmitting }: { isSubmitting: boolean }) 
 
         <div className="diagnostic-form__field">
           <label htmlFor="diagnostic-whatsapp">
-            WhatsApp
+            WhatsApp *
             <Controller
               control={control}
               name="whatsapp"
@@ -95,7 +95,7 @@ export function DiagnosticLeadForm({ isSubmitting }: { isSubmitting: boolean }) 
 
         <div className="diagnostic-form__field">
           <label htmlFor="diagnostic-email">
-            E-mail
+            E-mail corporativo * 
             <input
               {...register('email')}
               id="diagnostic-email"
@@ -103,7 +103,7 @@ export function DiagnosticLeadForm({ isSubmitting }: { isSubmitting: boolean }) 
               autoComplete="email"
               inputMode="email"
               autoCapitalize="none"
-              placeholder="voce@empresa.com"
+              placeholder="voce@suaempresa.com.br"
               aria-invalid={Boolean(errors.email)}
               aria-describedby={errors.email ? 'email-error' : undefined}
             />

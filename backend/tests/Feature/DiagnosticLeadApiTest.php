@@ -85,63 +85,55 @@ class DiagnosticLeadApiTest extends TestCase
             && $request['phones'][0]['value'] === '5512999999999');
     }
 
-    public function test_it_accepts_name_only_and_syncs_without_empty_optional_fields(): void
+    public function test_it_requires_name_whatsapp_and_corporate_email(): void
     {
-        $this->configurePipedrive();
-        Http::fakeSequence()
-            ->push(['data' => ['id' => 202]])
-            ->push(['data' => ['items' => []]])
-            ->push(['data' => ['id' => 303]]);
+        Config::set('services.pipedrive.api_token', null);
+        Http::fake();
 
         $response = $this->postJson('/api/v1/leads/diagnostic', [
-            'name' => 'Pessoa sem atrito',
-            'whatsapp' => null,
-            'email' => null,
+            'name' => 'Pessoa de Teste',
             'company_name' => null,
             'revenue_range' => null,
-            'source_page' => '/',
-            'utm_source' => 'google',
-            'utm_medium' => 'cpc',
-            'utm_campaign' => 'captacao',
-            'utm_content' => 'hero',
-            'utm_term' => 'diagnostico',
         ]);
 
-        $response->assertCreated();
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'whatsapp',
+                'email',
+            ]);
 
-        $lead = DiagnosticLead::firstOrFail();
-        $this->assertNull($lead->whatsapp);
-        $this->assertNull($lead->email);
-        $this->assertNull($lead->company_name);
-        $this->assertNull($lead->revenue_range);
-        $this->assertNull($lead->pipedrive_organization_id);
-        $this->assertSame(202, $lead->pipedrive_person_id);
-        $this->assertSame(303, $lead->pipedrive_deal_id);
-        $this->assertSame(DiagnosticLead::PIPEDRIVE_SYNC_SYNCED, $lead->pipedrive_sync_status);
+        $this->assertDatabaseCount('diagnostic_leads', 0);
 
-        Http::assertSentCount(3);
-        Http::assertNotSent(fn (Request $request): bool => str_contains(
-            parse_url($request->url(), PHP_URL_PATH),
-            '/organizations',
-        ));
-        Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
-            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/persons')
-            && $request['name'] === 'Pessoa sem atrito'
-            && ! array_key_exists('org_id', $request->data())
-            && ! array_key_exists('emails', $request->data())
-            && ! array_key_exists('phones', $request->data()));
-        Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
-            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/deals')
-            && ! array_key_exists('org_id', $request->data())
-            && ! array_key_exists('revenue_field', $request['custom_fields'])
-            && $request['custom_fields']['source_field'] === 64
-            && $request['custom_fields']['source_page_field'] === '/'
-            && $request['custom_fields']['local_id_field'] === $lead->public_id
-            && $request['custom_fields']['utm_source_field'] === 'google'
-            && $request['custom_fields']['utm_medium_field'] === 'cpc'
-            && $request['custom_fields']['utm_campaign_field'] === 'captacao'
-            && $request['custom_fields']['utm_content_field'] === 'hero'
-            && $request['custom_fields']['utm_term_field'] === 'diagnostico');
+        Http::assertNothingSent();
+    }
+
+    public function test_it_rejects_free_email_domains(): void
+    {
+        Config::set('services.pipedrive.api_token', null);
+        Http::fake();
+
+        foreach ([
+            'pessoa@gmail.com',
+            'pessoa@hotmail.com',
+            'pessoa@outlook.com',
+            'pessoa@yahoo.com',
+            'pessoa@icloud.com',
+        ] as $email) {
+            $response = $this->postJson('/api/v1/leads/diagnostic', [
+                'name' => 'Pessoa de Teste',
+                'whatsapp' => '(18) 99999-9999',
+                'email' => $email,
+            ]);
+
+            $response
+                ->assertUnprocessable()
+                ->assertJsonValidationErrors(['email']);
+        }
+
+        $this->assertDatabaseCount('diagnostic_leads', 0);
+
+        Http::assertNothingSent();
     }
 
     public function test_it_accepts_common_brazilian_whatsapp_formats(): void
@@ -158,11 +150,14 @@ class DiagnosticLeadApiTest extends TestCase
             $this->postJson('/api/v1/leads/diagnostic', [
                 'name' => 'Pessoa de Teste',
                 'whatsapp' => $input,
+                'email' => 'pessoa@algoritmux.com',
             ])->assertCreated();
 
             $this->assertSame(
                 $expected,
-                DiagnosticLead::query()->latest('id')->value('whatsapp'),
+                DiagnosticLead::query()
+                    ->latest('id')
+                    ->value('whatsapp'),
             );
         }
 

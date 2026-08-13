@@ -38,13 +38,46 @@ export function formatBrazilianWhatsApp(value: string): string {
   return `${prefix}(${areaCode}) ${phone.slice(0, firstBlockLength)}-${phone.slice(firstBlockLength)}`;
 }
 
-const optionalEmailSchema = z
+const freeEmailDomains = new Set([
+  // Google / Microsoft / Yahoo / Apple
+  'gmail.com', 'gmail.com.br', 'googlemail.com',
+  'hotmail.com', 'hotmail.com.br', 'outlook.com', 'outlook.com.br',
+  'live.com', 'live.com.br', 'msn.com',
+  'yahoo.com', 'yahoo.com.br', 'ymail.com',
+  'icloud.com', 'me.com', 'mac.com',
+  'aol.com',
+
+  // Nacionais (BR)
+  'bol.com.br', 'uol.com.br', 'terra.com.br', 'ig.com.br',
+  'r7.com', 'zipmail.com.br', 'globo.com', 'globomail.com', 'oi.com.br',
+
+  // Privacidade / Outros Globais
+  'proton.me', 'protonmail.com', 'tutanota.com', 'tuta.io',
+  'gmx.com', 'gmx.net', 'zoho.com', 'yandex.com', 'mail.com',
+
+  // E-mails Descartáveis / Temp Mail
+  'mailinator.com', '10minutemail.com', 'tempmail.com', 
+  'guerrillamail.com', 'throwawaymail.com', 'dispostable.com',
+
+  // Typos comuns (evita que e-mail errado passe como corporativo)
+  'gmial.com', 'gamil.com', 'gmaill.com', 'hotmial.com', 'hotmai.com', 'outlok.com',
+
+  // Testes / Placeholders
+  'empresa.com', 'empresa.com.br', 'suaempresa.com', 'suaempresa.com.br', 'teste.com'
+]);
+
+const corporateEmailSchema = z
   .string()
   .trim()
+  .min(1, 'Informe seu e-mail corporativo.')
   .max(254)
+  .email('Informe um e-mail válido.')
   .refine(
-    (value) => value === '' || z.string().email().safeParse(value).success,
-    'Informe um e-mail válido.',
+    (value) => {
+      const domain = value.split('@')[1]?.toLowerCase();
+      return domain !== undefined && !freeEmailDomains.has(domain);
+    },
+    'Utilize um e-mail corporativo.',
   );
 
 export const diagnosticLeadSchema = z.object({
@@ -52,13 +85,14 @@ export const diagnosticLeadSchema = z.object({
   whatsapp: z
     .string()
     .trim()
+    .min(1, 'Informe seu WhatsApp.')
     .max(25)
     .refine((value) => {
       const digits = normalizeWhatsApp(value);
 
-      return digits === '' || /^(?:55)?\d{10,11}$/.test(digits);
+      return /^(?:55)?\d{10,11}$/.test(digits);
     }, 'Informe um WhatsApp válido.'),
-  email: optionalEmailSchema,
+  email: corporateEmailSchema,
   company_name: z.string().trim().max(255),
   revenue_range: z.union([z.enum(revenueRangeValues), z.literal('')]),
 });

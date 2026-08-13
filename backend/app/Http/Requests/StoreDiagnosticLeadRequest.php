@@ -27,8 +27,48 @@ class StoreDiagnosticLeadRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'whatsapp' => ['nullable', 'string', 'regex:/^(?:55)?\d{10,11}$/'],
-            'email' => ['nullable', 'string', 'email:rfc', 'max:254'],
+            'whatsapp' => ['required', 'string', 'regex:/^(?:55)?\d{10,11}$/'],
+            'email' => ['required', 'string', 'email:rfc', 'max:254',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    $freeEmailDomains = [
+                        // Google / Microsoft / Yahoo / Apple
+                        'gmail.com', 'gmail.com.br', 'googlemail.com',
+                        'hotmail.com', 'hotmail.com.br', 'outlook.com', 'outlook.com.br',
+                        'live.com', 'live.com.br', 'msn.com',
+                        'yahoo.com', 'yahoo.com.br', 'ymail.com',
+                        'icloud.com', 'me.com', 'mac.com',
+                        'aol.com',
+
+                        // Nacionais (BR)
+                        'bol.com.br', 'uol.com.br', 'terra.com.br', 'ig.com.br',
+                        'r7.com', 'zipmail.com.br', 'globo.com', 'globomail.com', 'oi.com.br',
+
+                        // Privacidade / Outros Globais
+                        'proton.me', 'protonmail.com', 'tutanota.com', 'tuta.io',
+                        'gmx.com', 'gmx.net', 'zoho.com', 'yandex.com', 'mail.com',
+
+                        // E-mails Descartáveis / Temp Mail
+                        'mailinator.com', '10minutemail.com', 'tempmail.com',
+                        'guerrillamail.com', 'throwawaymail.com', 'dispostable.com',
+
+                        // Typos comuns (evita que e-mail errado passe como corporativo)
+                        'gmial.com', 'gamil.com', 'gmaill.com', 'hotmial.com', 'hotmai.com', 'outlok.com',
+
+                        // Testes / Placeholders
+                        'empresa.com', 'empresa.com.br', 'suaempresa.com', 'suaempresa.com.br', 'teste.com',
+                    ];
+
+                    if (! is_string($value)) {
+                        return;
+                    }
+
+                    $domain = mb_strtolower(substr(strrchr($value, '@') ?: '', 1));
+
+                    if (in_array($domain, $freeEmailDomains, true)) {
+                        $fail('Utilize um e-mail corporativo.');
+                    }
+                },
+            ],
             'company_name' => ['nullable', 'string', 'max:255'],
             'website' => ['nullable', 'string', 'max:255', function (string $attribute, mixed $value, \Closure $fail): void {
                 if (! WebsiteNormalizer::isValid($value)) {
