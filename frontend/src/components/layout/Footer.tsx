@@ -31,7 +31,7 @@ export function Footer() {
               </ExternalLink>
             ))}
           </div>
-          <small>© 2026 Algoritmux. Todos os direitos reservados.</small>
+          <small>© 2026 Algoritmux. Todos os direitos reservados. Algoritmux Ltda — CNPJ 42.324.675/0001-36 </small>
         </div>
       </div>
     </footer>
