@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormProvider, useForm } from 'react-hook-form';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { useModalAccessibility } from '../../hooks/useModalAccessibility';
 import {
@@ -21,6 +21,7 @@ type Props = {
 
 export function DiagnosticModal({ isOpen, onClose }: Props) {
   const [isComplete, setIsComplete] = useState(false);
+  const hasTrackedCompletion = useRef(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const form = useForm<DiagnosticLeadFormValues>({
     resolver: zodResolver(diagnosticLeadSchema),
@@ -33,6 +34,7 @@ export function DiagnosticModal({ isOpen, onClose }: Props) {
     },
   });
   const close = useCallback(() => {
+    hasTrackedCompletion.current = false;
     setIsComplete(false);
     setSubmissionError(null);
     form.reset();
@@ -40,6 +42,13 @@ export function DiagnosticModal({ isOpen, onClose }: Props) {
   }, [form, onClose]);
   const dialogRef = useModalAccessibility(isOpen, close);
   useBodyScrollLock(isOpen);
+
+  useEffect(() => {
+    if (!isOpen || !isComplete || hasTrackedCompletion.current) return;
+
+    hasTrackedCompletion.current = true;
+    window.dataLayer?.push({ event: 'diagnostic_lead_success' });
+  }, [isComplete, isOpen]);
 
   const submit = form.handleSubmit(async (values) => {
     setSubmissionError(null);
