@@ -5,6 +5,8 @@ export type Article = {
   summary: string;
   category: string;
   date: string;
+  publishedAt: string;
+  updatedAt?: string;
   author: string;
   readingTimeMinutes: number;
   image?: string;

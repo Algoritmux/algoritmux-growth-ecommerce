@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArticleLayout } from '../components/blog/ArticleLayout';
 import { ArticleRecommendations } from '../components/blog/ArticleRecommendations';
+import { ArticleStructuredData } from '../components/blog/ArticleStructuredData';
 import { PageMetadata } from '../components/common/PageMetadata';
 import {
   ArticleApiError,
@@ -223,6 +224,7 @@ export function ArticlePage() {
         canonical={article.path}
         image={article.image}
       />
+      <ArticleStructuredData article={article} />
       <section className="article-section">
         <div className="site-container article-container">
           <ArticleLayout article={article} />
