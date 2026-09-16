@@ -5,6 +5,7 @@ import { ResponsiveImage } from "../components/common/ResponsiveImage";
 import { ScrollReveal } from "../components/common/ScrollReveal";
 import { SectionHeading } from "../components/common/SectionHeading";
 import { CaseCarousel } from "../components/cases/CaseCarousel";
+import { SiteStructuredData } from "../components/seo/SiteStructuredData";
 import { cases } from "../data/cases";
 import { team } from "../data/team";
 import { useDiagnostic } from "../layouts/DiagnosticContext";
@@ -120,6 +121,7 @@ export function HomePage() {
         description="Marketing, vendas e inteligência de dados conectados em um sistema previsível de crescimento."
         canonical="/"
       />
+      <SiteStructuredData />
 
       <section className="hero home-hero">
         <div className="site-container hero-grid">
