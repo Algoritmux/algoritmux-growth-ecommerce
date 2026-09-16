@@ -173,6 +173,7 @@ export function ArticlePage() {
         <PageMetadata
           title="Artigo não encontrado | Algoritmux"
           description="O artigo solicitado não foi encontrado no Blog Algoritmux."
+          robots="noindex, nofollow"
         />
         <section className="article-section">
           <div className="article-container blog-state">
@@ -197,6 +198,7 @@ export function ArticlePage() {
         <PageMetadata
           title="Blog temporariamente indisponível | Algoritmux"
           description="Não foi possível carregar este artigo no momento."
+          robots="noindex, nofollow"
         />
         <section className="article-section">
           <div className="article-container blog-state" role="alert">
@@ -218,6 +220,8 @@ export function ArticlePage() {
       <PageMetadata
         title={article.metadata.title}
         description={article.metadata.description}
+        canonical={article.path}
+        image={article.image}
       />
       <section className="article-section">
         <div className="site-container article-container">

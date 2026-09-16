@@ -43,6 +43,7 @@ export function BlogPage() {
       <PageMetadata
         title="Blog | Algoritmux"
         description="Insights de Growth, vendas, inteligência artificial e design de conversão para operações B2B."
+        canonical="/blog"
       />
       <section className="page-hero blog-hero">
         <div className="site-container page-hero__inner">

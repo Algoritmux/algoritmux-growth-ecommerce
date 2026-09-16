@@ -118,6 +118,7 @@ export function HomePage() {
       <PageMetadata
         title="Algoritmux | Crescimento de Receita Previsível e Engenharia de Conversão"
         description="Marketing, vendas e inteligência de dados conectados em um sistema previsível de crescimento."
+        canonical="/"
       />
 
       <section className="hero home-hero">
