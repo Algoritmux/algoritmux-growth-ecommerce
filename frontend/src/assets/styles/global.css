@@ -202,6 +202,11 @@ main {
   object-fit: cover;
 }
 
+.responsive-picture {
+  display: block;
+  width: 100%;
+}
+
 .badge {
   display: inline-flex;
   width: max-content;
