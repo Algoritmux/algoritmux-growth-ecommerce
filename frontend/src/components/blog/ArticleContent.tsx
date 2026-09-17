@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 type ArticleContentProps = {
   html: string;
@@ -6,6 +6,20 @@ type ArticleContentProps = {
 
 export function ArticleContent({ html }: ArticleContentProps) {
   const contentRef = useRef<HTMLDivElement>(null);
+  const optimizedHtml = useMemo(() => {
+    if (!html) {
+      return '';
+    }
+
+    const document = new DOMParser().parseFromString(html, 'text/html');
+
+    document.querySelectorAll<HTMLImageElement>('img').forEach((image) => {
+      image.setAttribute('loading', 'lazy');
+      image.setAttribute('decoding', 'async');
+    });
+
+    return document.body.innerHTML;
+  }, [html]);
 
   useEffect(() => {
     const content = contentRef.current;
@@ -47,13 +61,13 @@ export function ArticleContent({ html }: ArticleContentProps) {
     });
 
     return () => cleanups.forEach((cleanup) => cleanup());
-  }, [html]);
+  }, [optimizedHtml]);
 
   return (
     <div
       ref={contentRef}
       className="article-content"
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: optimizedHtml }}
     />
   );
 }
