@@ -57,7 +57,7 @@ jobs:
         run: |
           npm ci
           npm run build
-          
+
       - name: Test backend
         working-directory: backend
         env:
@@ -96,12 +96,12 @@ jobs:
           SSH_USER: ${{ secrets.SSH_USER }}
         run: |
           rsync -az --delete \
-            -e "ssh -p $SSH_PORT" \
+            -e "ssh -p $SSH_PORT -o ServerAliveInterval=60 -o ServerAliveCountMax=5" \
             frontend/dist/ \
             "$SSH_USER@$SSH_HOST:/home3/guilh247/algoritmux-frontend-release/"
 
           rsync -az --delete \
-            -e "ssh -p $SSH_PORT" \
+            -e "ssh -p $SSH_PORT -o ServerAliveInterval=60 -o ServerAliveCountMax=5" \
             backend/public/build/ \
             "$SSH_USER@$SSH_HOST:/home3/guilh247/algoritmux-backend-build-release/"
 
