@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://algoritmux.com/sitemap.xml
+Sitemap: https://api.algoritmux.com/sitemap-articles.xml

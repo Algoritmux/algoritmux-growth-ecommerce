@@ -26,6 +26,7 @@ export type ArticleApiSummary = {
 };
 
 export type ArticleApiDetail = ArticleApiSummary & {
+  updated_at: string;
   content: string;
 };
 

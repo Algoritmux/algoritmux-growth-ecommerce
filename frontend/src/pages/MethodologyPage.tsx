@@ -63,6 +63,7 @@ export function MethodologyPage() {
       <PageMetadata
         title="Metodologia | Algoritmux | Engenharia de Conversão"
         description="Conheça o flywheel Algoritmux e seus ciclos contínuos de dados, execução, otimização e escala."
+        canonical="/metodologia"
       />
       <section className="page-hero">
         <div className="site-container page-hero__inner">

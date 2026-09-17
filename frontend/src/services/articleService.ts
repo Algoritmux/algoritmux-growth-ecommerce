@@ -1,4 +1,5 @@
 import type {
+  ArticleApiDetail,
   ArticleApiResponse,
   ArticleApiSummary,
   ArticlesApiResponse,
@@ -124,7 +125,7 @@ export function getPublicArticlePath(slug: string): string {
 }
 
 function mapApiArticle(
-  article: ArticleApiSummary,
+  article: ArticleApiSummary | ArticleApiDetail,
   contentHtml?: string,
 ): Article {
   const image = article.cover_image?.url
@@ -138,6 +139,8 @@ function mapApiArticle(
     summary: article.excerpt,
     category: article.category,
     date: formatPublishedDate(article.published_at),
+    publishedAt: article.published_at,
+    updatedAt: 'updated_at' in article ? article.updated_at : undefined,
     author: article.author.name,
     readingTimeMinutes: article.reading_time_minutes,
     image,

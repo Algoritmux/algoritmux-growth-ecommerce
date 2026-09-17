@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { App } from '../App';
 
 const routeArticle = {
@@ -19,8 +19,15 @@ function renderRoute(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <App />
+      <LocationProbe />
     </MemoryRouter>,
   );
+}
+
+function LocationProbe() {
+  const location = useLocation();
+
+  return <output data-testid="current-path">{location.pathname}</output>;
 }
 
 describe('rotas públicas', () => {
@@ -35,12 +42,38 @@ describe('rotas públicas', () => {
   it.each([
     ['/', /Seu marketing gera movimento, mas gera venda\?/i],
     ['/index.html', /Seu marketing gera movimento, mas gera venda\?/i],
-    ['/metodologia.html', /A Metodologia Algoritmux/i],
-    ['/equipe.html', /Especialistas multidisciplinares/i],
+    ['/metodologia', /A Metodologia Algoritmux/i],
+    ['/equipe', /Especialistas multidisciplinares/i],
     ['/blog', /Inteligência de Growth & Vendas/i],
   ])('carrega %s', (path, title) => {
     renderRoute(path);
     expect(screen.getByRole('heading', { level: 1, name: title })).toBeVisible();
+  });
+
+  it.each([
+    ['/metodologia.html', '/metodologia', /A Metodologia Algoritmux/i],
+    ['/equipe.html', '/equipe', /Especialistas multidisciplinares/i],
+  ])('redireciona o alias %s para %s', async (legacyPath, cleanPath, title) => {
+    renderRoute(legacyPath);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('current-path')).toHaveTextContent(cleanPath);
+    });
+    expect(screen.getByRole('heading', { level: 1, name: title })).toBeVisible();
+  });
+
+  it.each([
+    ['/metodologia', 'https://algoritmux.com/metodologia'],
+    ['/equipe', 'https://algoritmux.com/equipe'],
+  ])('usa canonical limpo em %s', async (path, canonical) => {
+    renderRoute(path);
+
+    await waitFor(() => {
+      expect(document.querySelector('link[rel="canonical"]')).toHaveAttribute(
+        'href',
+        canonical,
+      );
+    });
   });
 
   it('preserva integralmente o texto atualizado do hero', () => {

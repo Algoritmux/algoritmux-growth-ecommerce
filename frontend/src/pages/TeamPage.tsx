@@ -14,6 +14,7 @@ export function TeamPage() {
       <PageMetadata
         title="A Equipe | Algoritmux"
         description="Conheça os especialistas multidisciplinares que conectam estratégia, dados, marketing e design na Algoritmux."
+        canonical="/equipe"
       />
       <section className="page-hero team-page-hero">
         <div className="site-container page-hero__inner">

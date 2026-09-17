@@ -15,9 +15,9 @@ npm.cmd install
 npm.cmd run dev
 ```
 
-O Vite informará o endereço local. As URLs históricas (`/index.html`,
-`/metodologia.html`, `/equipe.html`, `/blog.html` e os três artigos) continuam
-disponíveis pelo React Router.
+O Vite informará o endereço local. As páginas institucionais usam as rotas
+`/metodologia`, `/equipe` e `/blog`. As URLs históricas com extensão `.html`
+continuam disponíveis como aliases no React Router.
 
 ## Validação
 

@@ -20,6 +20,7 @@ class ArticleDetailResource extends ArticleListResource
 
         return [
             ...parent::toArray($request),
+            'updated_at' => $article->updated_at?->toIso8601String(),
             'content' => $article->getRichContentAttribute('content')->toHtml(),
         ];
     }

@@ -110,6 +110,7 @@ describe('integração pública de artigos', () => {
       3,
     );
     expect(loading.querySelector('.blog-state__loader')).toBeNull();
+    expect(document.querySelector('#algoritmux-article-schema')).toBeNull();
   });
 
   it('lista somente os artigos retornados pela API', async () => {
@@ -186,6 +187,7 @@ describe('integração pública de artigos', () => {
         return jsonResponse({
           data: {
             ...apiArticle,
+            updated_at: '2026-08-02T09:30:00-03:00',
             content:
               '<p>Conteúdo vindo da API.</p><p><img src="http://localhost/storage/articles/content/019444e8-7f9f-4abc-8def-0123456789ab.webp" alt="Imagem interna"></p><p><strong>Legenda:</strong> Crescimento conectado.</p><h2>Decisões melhores</h2><ul><li>Marcador principal<ul><li>Marcador aninhado</li></ul></li></ul><ol><li>Primeiro passo</li><li>Segundo passo</li></ol>',
           },
@@ -207,6 +209,11 @@ describe('integração pública de artigos', () => {
       name: 'Growth orientado por dados',
     });
     expect(articleTitle).toBeVisible();
+    await waitFor(() => {
+      expect(
+        document.querySelectorAll('#algoritmux-article-schema'),
+      ).toHaveLength(1);
+    });
     expect(articleTitle.closest('header')).toHaveClass('article-header');
     expect(screen.getByText('Equipe Algoritmux')).toBeVisible();
     expect(screen.getByText('6 min de leitura')).toBeVisible();
@@ -287,6 +294,7 @@ describe('integração pública de artigos', () => {
     expect(
       await screen.findByText('Artigo não encontrado', { selector: 'strong' }),
     ).toBeVisible();
+    expect(document.querySelector('#algoritmux-article-schema')).toBeNull();
   });
 
   it('exibe erro de conexão no detalhe', async () => {
@@ -297,6 +305,7 @@ describe('integração pública de artigos', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Não foi possível carregar este artigo',
     );
+    expect(document.querySelector('#algoritmux-article-schema')).toBeNull();
   });
 
   it('remove o espaço reservado quando uma imagem interna falha', () => {
