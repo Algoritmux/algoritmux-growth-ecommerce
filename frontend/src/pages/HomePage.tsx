@@ -145,6 +145,14 @@ export function HomePage() {
             <div className="hero-orbit" aria-hidden="true" />
             <ResponsiveImage
               src="/images/equipe/diretores.png"
+              sources={[
+                {
+                  type: "image/webp",
+                  srcSet:
+                    "/images/equipe/diretores-640.webp 640w, /images/equipe/diretores.webp 1024w",
+                  sizes: "(max-width: 899px) min(108vw, 720px), min(56vw, 860px)",
+                },
+              ]}
               alt="Diretores Algoritmux"
               width={780}
               height={700}

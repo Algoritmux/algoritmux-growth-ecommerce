@@ -45,9 +45,9 @@ describe('rotas públicas', () => {
     ['/metodologia', /A Metodologia Algoritmux/i],
     ['/equipe', /Especialistas multidisciplinares/i],
     ['/blog', /Inteligência de Growth & Vendas/i],
-  ])('carrega %s', (path, title) => {
+  ])('carrega %s', async (path, title) => {
     renderRoute(path);
-    expect(screen.getByRole('heading', { level: 1, name: title })).toBeVisible();
+    expect(await screen.findByRole('heading', { level: 1, name: title })).toBeVisible();
   });
 
   it.each([
@@ -59,7 +59,7 @@ describe('rotas públicas', () => {
     await waitFor(() => {
       expect(screen.getByTestId('current-path')).toHaveTextContent(cleanPath);
     });
-    expect(screen.getByRole('heading', { level: 1, name: title })).toBeVisible();
+    expect(await screen.findByRole('heading', { level: 1, name: title })).toBeVisible();
   });
 
   it.each([

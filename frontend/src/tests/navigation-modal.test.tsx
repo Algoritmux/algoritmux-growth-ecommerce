@@ -111,7 +111,7 @@ describe('navegação e diagnóstico', () => {
 
     await user.click(opener);
 
-    expect(screen.getByRole('dialog')).toBeVisible();
+    expect(await screen.findByRole('dialog')).toBeVisible();
 
     expect(document.body).toHaveStyle({
       overflow: 'hidden',
@@ -152,7 +152,7 @@ describe('navegação e diagnóstico', () => {
     );
 
     expect(
-      screen.getByLabelText(/^Nome\s*\*?$/),
+      await screen.findByLabelText(/^Nome\s*\*?$/),
     ).toBeVisible();
 
     expect(
@@ -233,6 +233,7 @@ describe('navegação e diagnóstico', () => {
       })[0],
     );
 
+    await screen.findByRole('dialog');
     await fillCompleteDiagnostic(user);
 
     await user.click(
@@ -319,6 +320,7 @@ describe('navegação e diagnóstico', () => {
       })[0],
     );
 
+    await screen.findByRole('dialog');
     await user.type(
       screen.getByLabelText(/^Nome\s*\*?$/),
       'Pessoa Teste',
@@ -377,6 +379,7 @@ describe('navegação e diagnóstico', () => {
       })[0],
     );
 
+    await screen.findByRole('dialog');
     await user.type(
       screen.getByLabelText(/^Nome\s*\*?$/),
       'Pessoa Teste',

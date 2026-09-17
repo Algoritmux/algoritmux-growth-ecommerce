@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Montserrat";
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("../fonts/montserrat-latin-variable.woff2") format("woff2");
+}
+
 :root {
   color-scheme: dark;
   --color-brand: #6d28d9;
@@ -200,6 +208,11 @@ main {
   width: 100%;
   height: auto;
   object-fit: cover;
+}
+
+.responsive-picture {
+  display: block;
+  width: 100%;
 }
 
 .badge {

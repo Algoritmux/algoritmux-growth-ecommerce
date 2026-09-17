@@ -1,10 +1,19 @@
-import type { ImgHTMLAttributes } from 'react';
+import type {
+  ImgHTMLAttributes,
+  SourceHTMLAttributes,
+} from 'react';
+
+type ResponsiveImageSource = Pick<
+  SourceHTMLAttributes<HTMLSourceElement>,
+  'media' | 'sizes' | 'srcSet' | 'type'
+>;
 
 type ResponsiveImageProps = ImgHTMLAttributes<HTMLImageElement> & {
   src: string;
   alt: string;
   aspectRatio?: string;
   priority?: boolean;
+  sources?: ResponsiveImageSource[];
 };
 
 export function ResponsiveImage({
@@ -12,11 +21,12 @@ export function ResponsiveImage({
   alt,
   aspectRatio,
   priority = false,
+  sources = [],
   className = '',
   style,
   ...props
 }: ResponsiveImageProps) {
-  return (
+  const image = (
     <img
       src={src}
       alt={alt}
@@ -27,5 +37,21 @@ export function ResponsiveImage({
       style={{ aspectRatio, ...style }}
       {...props}
     />
+  );
+
+  if (sources.length === 0) {
+    return image;
+  }
+
+  return (
+    <picture className="responsive-picture">
+      {sources.map((source) => (
+        <source
+          key={`${source.type ?? ''}-${source.media ?? ''}-${source.srcSet}`}
+          {...source}
+        />
+      ))}
+      {image}
+    </picture>
   );
 }

@@ -189,7 +189,7 @@ describe('integração pública de artigos', () => {
             ...apiArticle,
             updated_at: '2026-08-02T09:30:00-03:00',
             content:
-              '<p>Conteúdo vindo da API.</p><p><img src="http://localhost/storage/articles/content/019444e8-7f9f-4abc-8def-0123456789ab.webp" alt="Imagem interna"></p><p><strong>Legenda:</strong> Crescimento conectado.</p><h2>Decisões melhores</h2><ul><li>Marcador principal<ul><li>Marcador aninhado</li></ul></li></ul><ol><li>Primeiro passo</li><li>Segundo passo</li></ol>',
+              '<p>Conteúdo vindo da API.</p><p><img src="http://localhost/storage/articles/content/019444e8-7f9f-4abc-8def-0123456789ab.webp" alt="Imagem interna" width="960" height="540"></p><p><strong>Legenda:</strong> Crescimento conectado.</p><h2>Decisões melhores</h2><ul><li>Marcador principal<ul><li>Marcador aninhado</li></ul></li></ul><ol><li>Primeiro passo</li><li>Segundo passo</li></ol>',
           },
         });
       }
@@ -232,6 +232,11 @@ describe('integração pública de artigos', () => {
       'src',
       'http://127.0.0.1:8000/storage/articles/content/019444e8-7f9f-4abc-8def-0123456789ab.webp',
     );
+    expect(internalImage).toHaveAttribute('alt', 'Imagem interna');
+    expect(internalImage).toHaveAttribute('width', '960');
+    expect(internalImage).toHaveAttribute('height', '540');
+    expect(internalImage).toHaveAttribute('loading', 'lazy');
+    expect(internalImage).toHaveAttribute('decoding', 'async');
     expect(internalImage.closest('figure')).not.toBeNull();
     expect(screen.getByText('Crescimento conectado.')).toBeVisible();
     expect(screen.getByText('Marcador principal').closest('ul')).toBeVisible();

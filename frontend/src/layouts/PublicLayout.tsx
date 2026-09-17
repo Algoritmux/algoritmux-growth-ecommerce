@@ -1,11 +1,22 @@
-import { useCallback, useEffect, useState } from 'react';
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { DiagnosticModal } from '../components/diagnostic/DiagnosticModal';
 import { Footer } from '../components/layout/Footer';
 import { Header } from '../components/layout/Header';
 import { ScrollToTop } from '../components/layout/ScrollToTop';
 import { captureUtmParameters } from '../services/utmService';
 import { DiagnosticContext } from './DiagnosticContext';
+
+const DiagnosticModal = lazy(() =>
+  import('../components/diagnostic/DiagnosticModal').then((module) => ({
+    default: module.DiagnosticModal,
+  })),
+);
 
 export function PublicLayout() {
   const { search } = useLocation();
@@ -26,7 +37,11 @@ export function PublicLayout() {
         <Outlet />
       </main>
       <Footer />
-      <DiagnosticModal isOpen={diagnosticOpen} onClose={closeDiagnostic} />
+      {diagnosticOpen ? (
+        <Suspense fallback={null}>
+          <DiagnosticModal isOpen onClose={closeDiagnostic} />
+        </Suspense>
+      ) : null}
     </DiagnosticContext.Provider>
   );
 }
