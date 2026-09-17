@@ -12,8 +12,16 @@ export function App() {
       <Route element={<PublicLayout />}>
         <Route index element={<HomePage />} />
         <Route path="/index.html" element={<HomePage />} />
-        <Route path="/metodologia.html" element={<MethodologyPage />} />
-        <Route path="/equipe.html" element={<TeamPage />} />
+        <Route path="/metodologia" element={<MethodologyPage />} />
+        <Route
+          path="/metodologia.html"
+          element={<Navigate to="/metodologia" replace />}
+        />
+        <Route path="/equipe" element={<TeamPage />} />
+        <Route
+          path="/equipe.html"
+          element={<Navigate to="/equipe" replace />}
+        />
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/blog.html" element={<Navigate to="/blog" replace />} />
         <Route path="/blog/:slug" element={<ArticlePage />} />
