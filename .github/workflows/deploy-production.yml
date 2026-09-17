@@ -95,12 +95,29 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
         run: |
-          rsync -az --delete \
+          retry() {
+            local attempt=1
+            local max_attempts=3
+            local delay_seconds=15
+
+            until "$@"; do
+              if (( attempt >= max_attempts )); then
+                echo "Remote operation failed after $max_attempts attempts." >&2
+                return 1
+              fi
+
+              echo "Remote operation failed on attempt $attempt/$max_attempts. Retrying in ${delay_seconds}s..." >&2
+              sleep "$delay_seconds"
+              attempt=$((attempt + 1))
+            done
+          }
+
+          retry rsync -az --delete \
             -e "ssh -p $SSH_PORT -o ServerAliveInterval=60 -o ServerAliveCountMax=5" \
             frontend/dist/ \
             "$SSH_USER@$SSH_HOST:/home3/guilh247/algoritmux-frontend-release/"
 
-          rsync -az --delete \
+          retry rsync -az --delete \
             -e "ssh -p $SSH_PORT -o ServerAliveInterval=60 -o ServerAliveCountMax=5" \
             backend/public/build/ \
             "$SSH_USER@$SSH_HOST:/home3/guilh247/algoritmux-backend-build-release/"
@@ -111,21 +128,33 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
         run: |
-          ssh \
+          retry() {
+            local attempt=1
+            local max_attempts=3
+            local delay_seconds=15
+
+            until "$@"; do
+              if (( attempt >= max_attempts )); then
+                echo "Remote operation failed after $max_attempts attempts." >&2
+                return 1
+              fi
+
+              echo "Remote operation failed on attempt $attempt/$max_attempts. Retrying in ${delay_seconds}s..." >&2
+              sleep "$delay_seconds"
+              attempt=$((attempt + 1))
+            done
+          }
+
+          retry ssh \
             -p "$SSH_PORT" \
             -o ServerAliveInterval=60 \
             -o ServerAliveCountMax=5 \
-            "$SSH_USER@$SSH_HOST" << 'EOF'
-
-          /home3/guilh247/algoritmux-scripts/deploy-backend.sh
-
-          mkdir -p /home3/guilh247/algoritmux-api/public/build
-
-          rsync -ah --delete \
-            /home3/guilh247/algoritmux-backend-build-release/ \
-            /home3/guilh247/algoritmux-api/public/build/
-
-          EOF
+            "$SSH_USER@$SSH_HOST" \
+            "/home3/guilh247/algoritmux-scripts/deploy-backend.sh && \
+             mkdir -p /home3/guilh247/algoritmux-api/public/build && \
+             rsync -ah --delete \
+             /home3/guilh247/algoritmux-backend-build-release/ \
+             /home3/guilh247/algoritmux-api/public/build/"
 
       - name: Deploy frontend
         env:
@@ -133,7 +162,24 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
         run: |
-          ssh \
+          retry() {
+            local attempt=1
+            local max_attempts=3
+            local delay_seconds=15
+
+            until "$@"; do
+              if (( attempt >= max_attempts )); then
+                echo "Remote operation failed after $max_attempts attempts." >&2
+                return 1
+              fi
+
+              echo "Remote operation failed on attempt $attempt/$max_attempts. Retrying in ${delay_seconds}s..." >&2
+              sleep "$delay_seconds"
+              attempt=$((attempt + 1))
+            done
+          }
+
+          retry ssh \
             -p "$SSH_PORT" \
             -o ServerAliveInterval=60 \
             -o ServerAliveCountMax=5 \
