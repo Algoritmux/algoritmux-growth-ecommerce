@@ -93,12 +93,16 @@ class ArticleFeedController extends Controller
         );
         $this->appendTextElement($document, $channel, 'language', 'pt-BR');
 
-        $lastUpdatedAt = $articles->max('updated_at') ?? now();
+        $lastBuildDate = $articles
+            ->map(fn (Article $article) => $article->published_at->greaterThan($article->updated_at)
+                ? $article->published_at
+                : $article->updated_at)
+            ->max() ?? now();
         $this->appendTextElement(
             $document,
             $channel,
             'lastBuildDate',
-            $lastUpdatedAt->toRfc2822String(),
+            $lastBuildDate->toRfc2822String(),
         );
 
         $selfLink = $document->createElementNS(self::ATOM_NAMESPACE, 'atom:link');

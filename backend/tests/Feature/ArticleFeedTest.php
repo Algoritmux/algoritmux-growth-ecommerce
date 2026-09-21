@@ -212,6 +212,35 @@ class ArticleFeedTest extends TestCase
         );
     }
 
+    public function test_last_build_date_uses_latest_publication_or_update_date_from_feed_items(): void
+    {
+        $latestPublishedArticle = Article::factory()->published()->create([
+            'slug' => 'publicacao-mais-recente',
+            'published_at' => now()->subHour(),
+            'updated_at' => now()->subDays(2),
+        ]);
+        Article::factory()->published()->create([
+            'slug' => 'alteracao-mais-recente',
+            'published_at' => now()->subDays(3),
+            'updated_at' => now()->subHours(2),
+        ]);
+
+        $document = $this->parseXml($this->get('/rss.xml')->assertOk()->getContent());
+        $xpath = $this->xpath($document);
+        $lastBuildDate = $xpath->evaluate('string(/rss/channel/lastBuildDate)');
+
+        $this->assertSame($latestPublishedArticle->published_at->toRfc2822String(), $lastBuildDate);
+
+        $lastBuildTimestamp = (new DateTimeImmutable($lastBuildDate))->getTimestamp();
+
+        foreach ($xpath->query('/rss/channel/item/pubDate') ?: [] as $pubDate) {
+            $this->assertGreaterThanOrEqual(
+                (new DateTimeImmutable($pubDate->textContent))->getTimestamp(),
+                $lastBuildTimestamp,
+            );
+        }
+    }
+
     public function test_guid_remains_stable_when_slug_changes(): void
     {
         $article = Article::factory()->published()->create([
