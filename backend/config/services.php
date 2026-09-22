@@ -63,4 +63,15 @@ return [
         ],
     ],
 
+    'listmonk' => [
+        'enabled' => filter_var(env('LISTMONK_ENABLED', false), FILTER_VALIDATE_BOOL),
+        'base_url' => env('LISTMONK_BASE_URL'),
+        'api_username' => env('LISTMONK_API_USERNAME'),
+        'api_token' => env('LISTMONK_API_TOKEN'),
+        'list_id' => env('LISTMONK_LIST_ID'),
+        'template_id' => env('LISTMONK_TEMPLATE_ID'),
+        'feed_url' => env('LISTMONK_FEED_URL', 'https://api.algoritmux.com/rss.xml'),
+        'timeout' => (int) env('LISTMONK_TIMEOUT', 10),
+    ],
+
 ];
