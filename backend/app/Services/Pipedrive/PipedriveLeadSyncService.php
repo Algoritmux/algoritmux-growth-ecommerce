@@ -183,6 +183,7 @@ class PipedriveLeadSyncService
         $this->addOptionalField($customFields, 'deal_source_field_key', $this->optionalInteger('deal_source_option_id'));
         $this->addOptionalField($customFields, 'deal_source_page_field_key', $lead->source_page);
         $this->addOptionalField($customFields, 'deal_local_id_field_key', $lead->public_id);
+        $this->addOptionalField($customFields, 'deal_project_type_field_key', $this->projectTypeOptionId($lead));
         $this->addOptionalField($customFields, 'deal_utm_source_field_key', $lead->utm_source);
         $this->addOptionalField($customFields, 'deal_utm_medium_field_key', $lead->utm_medium);
         $this->addOptionalField($customFields, 'deal_utm_campaign_field_key', $lead->utm_campaign);
@@ -355,5 +356,17 @@ class PipedriveLeadSyncService
         $value = config("services.pipedrive.{$configurationKey}");
 
         return is_numeric($value) ? (int) $value : null;
+    }
+
+    private function projectTypeOptionId(DiagnosticLead $lead): ?int
+    {
+        if (! filled($lead->project_type)) {
+            return null;
+        }
+
+        $optionIds = config('services.pipedrive.project_type_option_ids', []);
+        $optionId = is_array($optionIds) ? ($optionIds[$lead->project_type] ?? null) : null;
+
+        return is_numeric($optionId) ? (int) $optionId : null;
     }
 }

@@ -87,6 +87,16 @@ class StoreDiagnosticLeadRequest extends FormRequest
                     'above_500000',
                 ]),
             ],
+            'project_type' => [
+                'nullable',
+                'string',
+                'max:64',
+                Rule::in([
+                    'Site Institucional / B2B',
+                    'Loja Virtual / E-commerce',
+                    'Plataforma / Portal Web',
+                ]),
+            ],
             'source_page' => ['nullable', 'string', 'max:255'],
             'utm_source' => ['nullable', 'string', 'max:255'],
             'utm_medium' => ['nullable', 'string', 'max:255'],

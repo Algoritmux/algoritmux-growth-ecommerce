@@ -48,6 +48,7 @@ return [
         'deal_source_option_id' => env('PIPEDRIVE_DEAL_SOURCE_OPTION_ID'),
         'deal_source_page_field_key' => env('PIPEDRIVE_DEAL_SOURCE_PAGE_FIELD_KEY'),
         'deal_local_id_field_key' => env('PIPEDRIVE_DEAL_LOCAL_ID_FIELD_KEY'),
+        'deal_project_type_field_key' => env('PIPEDRIVE_DEAL_PROJECT_TYPE_FIELD_KEY'),
         'deal_utm_source_field_key' => env('PIPEDRIVE_DEAL_UTM_SOURCE_FIELD_KEY'),
         'deal_utm_medium_field_key' => env('PIPEDRIVE_DEAL_UTM_MEDIUM_FIELD_KEY'),
         'deal_utm_campaign_field_key' => env('PIPEDRIVE_DEAL_UTM_CAMPAIGN_FIELD_KEY'),
@@ -60,6 +61,11 @@ return [
             '150001_250000' => env('PIPEDRIVE_REVENUE_150001_250000_OPTION_ID'),
             '250001_500000' => env('PIPEDRIVE_REVENUE_250001_500000_OPTION_ID'),
             'above_500000' => env('PIPEDRIVE_REVENUE_ABOVE_500000_OPTION_ID'),
+        ],
+        'project_type_option_ids' => [
+            'Site Institucional / B2B' => env('PIPEDRIVE_DEAL_PROJECT_TYPE_SITE_INSTITUTIONAL_B2B_OPTION_ID'),
+            'Loja Virtual / E-commerce' => env('PIPEDRIVE_DEAL_PROJECT_TYPE_ECOMMERCE_OPTION_ID'),
+            'Plataforma / Portal Web' => env('PIPEDRIVE_DEAL_PROJECT_TYPE_PLATFORM_PORTAL_WEB_OPTION_ID'),
         ],
     ],
 

@@ -10,6 +10,7 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class DiagnosticLeadApiTest extends TestCase
@@ -232,6 +233,101 @@ class DiagnosticLeadApiTest extends TestCase
         $this->assertNull($lead->utm_campaign);
         $this->assertNull($lead->utm_content);
         $this->assertNull($lead->utm_term);
+    }
+
+    public function test_it_accepts_a_missing_project_type_and_persists_it_as_null(): void
+    {
+        Config::set('services.pipedrive.api_token', null);
+        Http::fake();
+
+        $this->postJson('/api/v1/leads/diagnostic', $this->leadPayload())->assertCreated();
+
+        $this->assertNull(DiagnosticLead::firstOrFail()->project_type);
+        Http::assertNothingSent();
+    }
+
+    #[DataProvider('validProjectTypes')]
+    public function test_it_accepts_and_persists_valid_project_types(string $projectType): void
+    {
+        Config::set('services.pipedrive.api_token', null);
+        Http::fake();
+
+        $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            'project_type' => $projectType,
+        ])->assertCreated();
+
+        $this->assertSame($projectType, DiagnosticLead::firstOrFail()->project_type);
+    }
+
+    public function test_it_rejects_an_invalid_project_type(): void
+    {
+        $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            'project_type' => 'Site qualquer',
+        ])->assertUnprocessable()->assertJsonValidationErrors(['project_type']);
+
+        $this->assertDatabaseCount('diagnostic_leads', 0);
+    }
+
+    public function test_it_rejects_a_project_type_longer_than_64_characters(): void
+    {
+        $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            'project_type' => str_repeat('a', 65),
+        ])->assertUnprocessable()->assertJsonValidationErrors(['project_type']);
+
+        $this->assertDatabaseCount('diagnostic_leads', 0);
+    }
+
+    #[DataProvider('pipedriveProjectTypeOptions')]
+    public function test_it_maps_project_type_to_the_configured_pipedrive_option(string $projectType, int $optionId): void
+    {
+        $this->configurePipedrive();
+        Http::fakeSequence()
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['id' => 101]])
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['id' => 202]])
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['id' => 303]]);
+
+        $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            'project_type' => $projectType,
+        ])->assertCreated();
+
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
+            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/deals')
+            && $request['custom_fields']['project_type_field'] === $optionId);
+    }
+
+    public function test_it_syncs_the_lead_when_project_type_pipedrive_configuration_is_missing(): void
+    {
+        $this->configurePipedrive();
+        Config::set('services.pipedrive.deal_project_type_field_key', null);
+        Config::set('services.pipedrive.project_type_option_ids', []);
+        Http::fakeSequence()
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['id' => 101]])
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['id' => 202]])
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['id' => 303]]);
+
+        $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            'project_type' => 'Plataforma / Portal Web',
+        ])->assertCreated();
+
+        $lead = DiagnosticLead::firstOrFail();
+        $this->assertSame('Plataforma / Portal Web', $lead->project_type);
+        $this->assertSame(DiagnosticLead::PIPEDRIVE_SYNC_SYNCED, $lead->pipedrive_sync_status);
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
+            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/deals')
+            && ! array_key_exists('project_type_field', $request['custom_fields']));
     }
 
     public function test_it_normalizes_and_accepts_flexible_public_websites(): void
@@ -552,6 +648,7 @@ class DiagnosticLeadApiTest extends TestCase
             'deal_source_option_id' => 64,
             'deal_source_page_field_key' => 'source_page_field',
             'deal_local_id_field_key' => 'local_id_field',
+            'deal_project_type_field_key' => 'project_type_field',
             'deal_utm_source_field_key' => 'utm_source_field',
             'deal_utm_medium_field_key' => 'utm_medium_field',
             'deal_utm_campaign_field_key' => 'utm_campaign_field',
@@ -565,7 +662,36 @@ class DiagnosticLeadApiTest extends TestCase
                 '250001_500000' => 62,
                 'above_500000' => 63,
             ],
+            'project_type_option_ids' => [
+                'Site Institucional / B2B' => 71,
+                'Loja Virtual / E-commerce' => 72,
+                'Plataforma / Portal Web' => 73,
+            ],
         ]);
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function validProjectTypes(): array
+    {
+        return [
+            'site institucional' => ['Site Institucional / B2B'],
+            'loja virtual' => ['Loja Virtual / E-commerce'],
+            'plataforma' => ['Plataforma / Portal Web'],
+        ];
+    }
+
+    /**
+     * @return array<string, array{string, int}>
+     */
+    public static function pipedriveProjectTypeOptions(): array
+    {
+        return [
+            'site institucional' => ['Site Institucional / B2B', 71],
+            'loja virtual' => ['Loja Virtual / E-commerce', 72],
+            'plataforma' => ['Plataforma / Portal Web', 73],
+        ];
     }
 
     /**
