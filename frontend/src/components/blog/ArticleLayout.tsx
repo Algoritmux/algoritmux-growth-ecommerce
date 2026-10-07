@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Article } from '../../types/content';
 import { ResponsiveImage } from '../common/ResponsiveImage';
+import { LeadMagnetCard } from '../lead-magnet/LeadMagnetCard';
 import { ArticleContent } from './ArticleContent';
 
 export function ArticleLayout({ article }: { article: Article }) {
@@ -47,8 +48,16 @@ export function ArticleLayout({ article }: { article: Article }) {
           />
         </div>
       ) : null}
-      <div className="article-body">
-        <ArticleContent html={article.contentHtml ?? ''} />
+      <div className="article-reading-grid">
+        <div className="article-body">
+          <ArticleContent
+            html={article.contentHtml ?? ''}
+            inlineLeadMagnet={<LeadMagnetCard variant="inline" />}
+          />
+        </div>
+        <div className="article-lead-magnet-sidebar">
+          <LeadMagnetCard variant="sidebar" />
+        </div>
       </div>
     </article>
   );

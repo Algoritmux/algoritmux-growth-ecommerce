@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { BlogCard } from '../components/blog/BlogCard';
 import { Badge } from '../components/common/Badge';
 import { PageMetadata } from '../components/common/PageMetadata';
+import { LeadMagnetCard } from '../components/lead-magnet/LeadMagnetCard';
 import { fetchArticles } from '../services/articleService';
 import type { Article } from '../types/content';
 
@@ -55,6 +56,11 @@ export function BlogPage() {
             Análises de mercado e táticas avançadas criadas pelos especialistas da
             Algoritmux para escalar operações corporativas B2B.
           </p>
+        </div>
+      </section>
+      <section className="blog-lead-magnet-section" aria-label="E-book gratuito">
+        <div className="site-container">
+          <LeadMagnetCard variant="blog" />
         </div>
       </section>
       <section className="section blog-section">

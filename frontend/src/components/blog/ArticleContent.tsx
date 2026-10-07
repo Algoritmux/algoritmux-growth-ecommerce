@@ -1,14 +1,15 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, type ReactNode } from 'react';
 
 type ArticleContentProps = {
   html: string;
+  inlineLeadMagnet?: ReactNode;
 };
 
-export function ArticleContent({ html }: ArticleContentProps) {
+export function ArticleContent({ html, inlineLeadMagnet }: ArticleContentProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const optimizedHtml = useMemo(() => {
     if (!html) {
-      return '';
+      return { introduction: '', remainder: '' };
     }
 
     const document = new DOMParser().parseFromString(html, 'text/html');
@@ -18,7 +19,30 @@ export function ArticleContent({ html }: ArticleContentProps) {
       image.setAttribute('decoding', 'async');
     });
 
-    return document.body.innerHTML;
+    const blocks = [...document.body.children];
+    let paragraphCount = 0;
+    let splitIndex = blocks.findIndex((block) => {
+      if (block.tagName === 'P') {
+        paragraphCount += 1;
+      }
+
+      return paragraphCount === 2;
+    });
+
+    if (splitIndex < 0) {
+      splitIndex = Math.min(1, blocks.length - 1);
+    }
+
+    return {
+      introduction: blocks
+        .slice(0, splitIndex + 1)
+        .map((block) => block.outerHTML)
+        .join(''),
+      remainder: blocks
+        .slice(splitIndex + 1)
+        .map((block) => block.outerHTML)
+        .join(''),
+    };
   }, [html]);
 
   useEffect(() => {
@@ -64,10 +88,18 @@ export function ArticleContent({ html }: ArticleContentProps) {
   }, [optimizedHtml]);
 
   return (
-    <div
-      ref={contentRef}
-      className="article-content"
-      dangerouslySetInnerHTML={{ __html: optimizedHtml }}
-    />
+    <div ref={contentRef} className="article-content">
+      <div
+        className="article-content__segment"
+        dangerouslySetInnerHTML={{ __html: optimizedHtml.introduction }}
+      />
+      {inlineLeadMagnet ? (
+        <div className="article-lead-magnet-inline">{inlineLeadMagnet}</div>
+      ) : null}
+      <div
+        className="article-content__segment"
+        dangerouslySetInnerHTML={{ __html: optimizedHtml.remainder }}
+      />
+    </div>
   );
 }

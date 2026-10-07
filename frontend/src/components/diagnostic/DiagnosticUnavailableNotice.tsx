@@ -13,7 +13,7 @@ export function DiagnosticUnavailableNotice({
       : '';
     const message = `Olá! Acabei de solicitar meu diagnóstico de performance${companyContext}. Gostaria de agendar a análise técnica de 15 minutos.`;
     window.open(
-      `https://wa.me/5512992474969?text=${encodeURIComponent(message)}`,
+      `https://wa.me/5514991267766?text=${encodeURIComponent(message)}`,
       '_blank',
       'noopener,noreferrer',
     );

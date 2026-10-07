@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\ArticleController;
 use App\Http\Controllers\Api\V1\DiagnosticLeadController;
+use App\Http\Controllers\Api\V1\LeadMagnetLeadController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -11,4 +12,7 @@ Route::prefix('v1')->group(function (): void {
 
     Route::post('leads/diagnostic', [DiagnosticLeadController::class, 'store'])
         ->middleware('throttle:diagnostic-leads');
+
+    Route::post('leads/lead-magnet', [LeadMagnetLeadController::class, 'store'])
+        ->middleware('throttle:lead-magnet-leads');
 });

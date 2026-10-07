@@ -101,6 +101,19 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .lead-magnet-card--blog {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  }
+
+  .lead-magnet-card--blog .lead-magnet-card__visual {
+    min-height: 500px;
+    padding: 2rem;
+  }
+
+  .lead-magnet-form__fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .cro-section .mini-feature-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -257,6 +270,22 @@
   .leadership-grid,
   .blog-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lead-magnet-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lead-magnet-card__visual {
+    min-height: 330px;
+  }
+
+  .lead-magnet-card__content {
+    padding: 2rem;
+  }
+
+  .lead-magnet-form .button {
+    width: 100%;
   }
 
   .cro-section {
@@ -513,6 +542,19 @@
     font-size: 0.86rem;
   }
 
+  .lead-magnet-card {
+    border-radius: 1.1rem;
+  }
+
+  .lead-magnet-card__visual {
+    min-height: 280px;
+    padding: 1.5rem;
+  }
+
+  .lead-magnet-card__content {
+    padding: 1.5rem;
+  }
+
   .hero h1 {
     font-size: clamp(2.35rem, 12.5vw, 3.35rem);
   }
@@ -660,6 +702,145 @@
 
   .diagnostic-actions .button {
     width: 100%;
+  }
+}
+
+@media (max-width: 1050px) {
+  .article-reading-grid {
+    width: min(920px, 100%);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .article-reading-grid .article-body,
+  .article-layout--with-cover .article-reading-grid .article-body {
+    margin-top: 0;
+  }
+
+  .article-lead-magnet-sidebar {
+    display: none;
+  }
+
+  .article-lead-magnet-inline {
+    display: block;
+    margin: 2.75rem 0;
+  }
+}
+
+@media (max-width: 899px) {
+  .blog-lead-magnet-section {
+    padding-top: 0.5rem;
+  }
+
+  .lead-magnet-card--blog {
+    min-height: 540px;
+    grid-template-columns: minmax(280px, 0.78fr) minmax(0, 1.22fr);
+  }
+
+  .lead-magnet-card--blog .lead-magnet-card__content {
+    padding: 2.5rem;
+  }
+
+  .lead-magnet-card--blog h2 {
+    font-size: clamp(1.9rem, 4.8vw, 2.7rem);
+  }
+}
+
+@media (max-width: 767px) {
+  .blog-lead-magnet-section {
+    padding: 0 0 4rem;
+  }
+
+  .lead-magnet-card--blog,
+  .lead-magnet-card--inline {
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lead-magnet-card--blog .lead-magnet-card__visual {
+    min-height: 390px;
+    padding: 2rem;
+  }
+
+  .lead-magnet-card--blog .lead-magnet-card__visual img {
+    width: min(245px, 68%);
+  }
+
+  .lead-magnet-card--inline .lead-magnet-card__visual {
+    min-height: 260px;
+    padding: 1.5rem;
+  }
+
+  .lead-magnet-card--inline .lead-magnet-card__visual img {
+    width: min(175px, 54%);
+  }
+
+  .lead-magnet-card--blog .lead-magnet-card__content,
+  .lead-magnet-card--inline .lead-magnet-card__content {
+    padding: 2rem;
+  }
+
+  .article-content .lead-magnet-card--inline h2 {
+    color: #ffffff;
+  }
+
+  .article-content .lead-magnet-card--inline .lead-magnet-card__content > p {
+    color: rgba(255, 255, 255, 0.76);
+  }
+
+  .article-content .lead-magnet-card--inline .lead-magnet-form__field label {
+    color: #f1f5f9;
+  }
+
+  .article-content .lead-magnet-card--inline .lead-magnet-form__field input {
+    color: #ffffff;
+  }
+
+  .article-content .lead-magnet-card--inline .lead-magnet-form__consent {
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .article-content .lead-magnet-card--inline p.lead-magnet-card__error {
+    color: #fda4af;
+  }
+
+  .article-content .lead-magnet-card--inline .lead-magnet-card__success strong {
+    color: #86efac;
+  }
+
+  .article-content .lead-magnet-card--inline .lead-magnet-card__success span {
+    color: #e2e8f0;
+  }
+
+  .article-reading-grid {
+    margin-top: 1rem;
+  }
+
+  .article-layout--with-cover .article-reading-grid {
+    margin-top: -2rem;
+  }
+
+  .article-reading-grid .article-body,
+  .article-layout--with-cover .article-reading-grid .article-body {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .lead-magnet-card--blog .lead-magnet-card__visual {
+    min-height: 340px;
+  }
+
+  .lead-magnet-card--blog .lead-magnet-card__visual img {
+    width: min(220px, 72%);
+  }
+
+  .lead-magnet-card--blog .lead-magnet-card__content,
+  .lead-magnet-card--inline .lead-magnet-card__content {
+    padding: 1.5rem;
+  }
+
+  .article-lead-magnet-inline {
+    margin: 2rem -0.35rem;
   }
 }
 

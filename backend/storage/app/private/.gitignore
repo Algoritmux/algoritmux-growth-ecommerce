@@ -1,2 +1,4 @@
 *
 !.gitignore
+!lead-magnets/
+!lead-magnets/.gitignore

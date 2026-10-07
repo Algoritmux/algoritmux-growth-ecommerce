@@ -7,6 +7,22 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Lead magnet
+
+O endpoint `POST /api/v1/leads/lead-magnet` persiste o pedido e executa os jobs de e-mail transacional e Listmonk de forma síncrona. Essa decisão mantém a entrega funcional no ambiente atual, pois o repositório não confirma um worker permanente em produção. A falha do Listmonk é registrada no lead e nunca desfaz nem bloqueia o envio do e-book.
+
+O PDF não é público. Coloque o arquivo em:
+
+```text
+storage/app/private/lead-magnets/playbook-growth-ecommerce.pdf
+```
+
+O catálogo, assunto e nome de download ficam em `config/lead-magnets.php`. O link enviado por e-mail é assinado, expira em sete dias e passa pelo backend para registrar `downloaded_at`.
+
+Para testar sem e-mail real, use `MAIL_MAILER=array` (testes automatizados) ou `MAIL_MAILER=log` (desenvolvimento). O Listmonk fica desabilitado com `LISTMONK_ENABLED=false`.
+
+Quando houver um worker supervisionado em produção, os dois jobs já implementam `ShouldQueue`. Troque `Bus::dispatchSync(...)` por dispatch assíncrono após commit e mantenha um processo como `php artisan queue:work --tries=3`; também é necessário monitorar e reiniciar o worker durante deploys.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

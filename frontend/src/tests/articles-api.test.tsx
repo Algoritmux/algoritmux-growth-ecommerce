@@ -137,6 +137,18 @@ describe('integração pública de artigos', () => {
         'src',
         'http://127.0.0.1:8000/storage/articles/capa.jpg',
       );
+    const leadMagnetSection = screen.getByRole('region', {
+      name: 'E-book gratuito',
+    });
+    const articleGrid = document.querySelector('.blog-grid');
+    expect(leadMagnetSection).toContainElement(
+      screen.getByAltText('Capa do e-book Guia definitivo do Growth Marketing'),
+    );
+    expect(
+      leadMagnetSection.compareDocumentPosition(articleGrid as Node)
+      & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(articleGrid?.querySelector('.lead-magnet-card')).toBeNull();
   });
 
   it('exibe estado vazio quando a API não possui publicações', async () => {
@@ -243,6 +255,13 @@ describe('integração pública de artigos', () => {
     expect(screen.getByText('Marcador aninhado').closest('ul')).toBeVisible();
     expect(screen.getByText('Primeiro passo').closest('ol')).toBeVisible();
     expect(screen.getByText('Segundo passo').closest('ol')).toBeVisible();
+    expect(document.querySelector('.article-reading-grid')).not.toBeNull();
+    expect(
+      document.querySelector('.article-lead-magnet-sidebar .lead-magnet-card--sidebar'),
+    ).not.toBeNull();
+    expect(
+      document.querySelector('.article-lead-magnet-inline .lead-magnet-card--inline'),
+    ).not.toBeNull();
     expect(
       await screen.findByRole('heading', {
         name: 'Recomendação carregada pela API',
@@ -328,5 +347,23 @@ describe('integração pública de artigos', () => {
     expect(image).not.toBeVisible();
     expect(wrapper).not.toBeVisible();
     expect(screen.getByText('Texto seguinte.')).toBeVisible();
+  });
+
+  it('insere o lead magnet mobile após os dois primeiros parágrafos', () => {
+    render(
+      <ArticleContent
+        html="<p>Introdução.</p><p>Segundo parágrafo.</p><h2>Primeira seção</h2><p>Continuação.</p>"
+        inlineLeadMagnet={<aside data-testid="inline-lead-magnet">Material</aside>}
+      />,
+    );
+
+    const segments = document.querySelectorAll('.article-content__segment');
+    expect(segments).toHaveLength(2);
+    expect(segments[0]).toHaveTextContent('Introdução.');
+    expect(segments[0]).toHaveTextContent('Segundo parágrafo.');
+    expect(segments[0]).not.toHaveTextContent('Primeira seção');
+    expect(screen.getByTestId('inline-lead-magnet')).toBeVisible();
+    expect(segments[1]).toHaveTextContent('Primeira seção');
+    expect(segments[1]).toHaveTextContent('Continuação.');
   });
 });

@@ -11,11 +11,16 @@ class ListmonkClient
 {
     public function isConfigured(): bool
     {
+        return $this->isSubscriberConfigured()
+            && $this->positiveInteger(config('services.listmonk.template_id')) !== null;
+    }
+
+    public function isSubscriberConfigured(): bool
+    {
         return $this->validBaseUrl()
             && filled(config('services.listmonk.api_username'))
             && filled(config('services.listmonk.api_token'))
             && $this->positiveInteger(config('services.listmonk.list_id')) !== null
-            && $this->positiveInteger(config('services.listmonk.template_id')) !== null
             && (int) config('services.listmonk.timeout') > 0;
     }
 
@@ -98,6 +103,73 @@ class ListmonkClient
         return 'rss-guid-'.hash('sha256', $guid);
     }
 
+    /**
+     * @param  array<string, string|null>  $attributes
+     */
+    public function upsertSubscriber(string $name, string $email, array $attributes = []): int
+    {
+        $this->ensureSubscriberConfigured();
+        $subscriberId = $this->findSubscriberIdByEmail($email);
+        $listId = $this->positiveInteger(config('services.listmonk.list_id'));
+        $attributes = array_filter($attributes, static fn (mixed $value): bool => $value !== null && $value !== '');
+
+        if ($subscriberId === null) {
+            $response = $this->client()->post('subscribers', [
+                'email' => $email,
+                'name' => $name,
+                'status' => 'enabled',
+                'lists' => [$listId],
+                'attribs' => $attributes,
+                'preconfirm_subscriptions' => true,
+            ]);
+            $this->ensureSuccessful($response);
+            $subscriberId = $this->positiveInteger(data_get($response->json(), 'data.id'));
+
+            if ($subscriberId === null) {
+                throw new RuntimeException('Listmonk returned an invalid subscriber identifier.');
+            }
+
+            return $subscriberId;
+        }
+
+        $this->ensureSuccessful($this->client()->patch("subscribers/{$subscriberId}", [
+            'name' => $name,
+            'attribs' => $attributes,
+        ]));
+        $this->ensureSuccessful($this->client()->put('subscribers/lists', [
+            'ids' => [$subscriberId],
+            'action' => 'add',
+            'target_list_ids' => [$listId],
+            'status' => 'confirmed',
+        ]));
+
+        return $subscriberId;
+    }
+
+    private function findSubscriberIdByEmail(string $email): ?int
+    {
+        $escapedEmail = str_replace("'", "''", $email);
+        $response = $this->client()->get('subscribers', [
+            'query' => "subscribers.email = '{$escapedEmail}'",
+            'page' => 1,
+            'per_page' => 1,
+        ]);
+        $this->ensureSuccessful($response);
+        $results = (array) data_get($response->json(), 'data.results', []);
+
+        if ($results === []) {
+            return null;
+        }
+
+        $subscriberId = $this->positiveInteger(data_get($results, '0.id'));
+
+        if ($subscriberId === null) {
+            throw new RuntimeException('Listmonk returned an invalid subscriber identifier.');
+        }
+
+        return $subscriberId;
+    }
+
     private function client(): PendingRequest
     {
         return Http::baseUrl(rtrim((string) config('services.listmonk.base_url'), '/').'/api')
@@ -115,6 +187,13 @@ class ListmonkClient
     {
         if (! $this->isConfigured()) {
             throw new RuntimeException('Listmonk configuration is incomplete.');
+        }
+    }
+
+    private function ensureSubscriberConfigured(): void
+    {
+        if (! $this->isSubscriberConfigured()) {
+            throw new RuntimeException('Listmonk subscriber configuration is incomplete.');
         }
     }
 
