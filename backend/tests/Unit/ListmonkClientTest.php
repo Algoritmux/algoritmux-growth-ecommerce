@@ -29,7 +29,7 @@ class ListmonkClientTest extends TestCase
                     ['id' => 12, 'email' => 'other@example.com'],
                     ['id' => 91, 'email' => 'existing@example.com'],
                 ]]]),
-                'PATCH', 'PUT' => Http::response(['data' => true]),
+                'PUT' => Http::response(['data' => true]),
                 default => Http::response([], 404),
             };
         });
@@ -50,14 +50,12 @@ class ListmonkClientTest extends TestCase
                 && $query['per_page'] === '100'
                 && ! array_key_exists('query', $query);
         });
-        Http::assertSent(fn (Request $request): bool => $request->method() === 'PATCH'
-            && $request->url() === 'https://listmonk.test/api/subscribers/91'
-            && ! array_key_exists('lists', $request->data()));
         Http::assertSent(fn (Request $request): bool => $request->method() === 'PUT'
             && $request->url() === 'https://listmonk.test/api/subscribers/lists'
             && $request['action'] === 'add'
-            && $request['target_list_ids'] === [7]);
-        Http::assertNotSent(fn (Request $request): bool => $request->method() === 'POST');
+            && $request['target_list_ids'] === [7]
+            && $request['status'] === 'confirmed');
+        Http::assertNotSent(fn (Request $request): bool => in_array($request->method(), ['PATCH', 'POST'], true));
     }
 
     public function test_it_creates_a_subscriber_when_search_has_no_exact_email_match(): void
@@ -93,6 +91,6 @@ class ListmonkClientTest extends TestCase
             && $request->url() === 'https://listmonk.test/api/subscribers'
             && $request['email'] === 'new-user@example.com'
             && $request['lists'] === [7]);
-        Http::assertNotSent(fn (Request $request): bool => in_array($request->method(), ['PATCH', 'PUT'], true));
+        Http::assertNotSent(fn (Request $request): bool => $request->method() === 'PATCH');
     }
 }

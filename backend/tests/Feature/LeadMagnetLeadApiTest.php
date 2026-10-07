@@ -185,7 +185,7 @@ class LeadMagnetLeadApiTest extends TestCase
         Mail::assertSentCount(1);
     }
 
-    public function test_it_updates_an_existing_listmonk_subscriber_without_replacing_other_lists(): void
+    public function test_it_adds_an_existing_listmonk_subscriber_without_replacing_other_lists(): void
     {
         $this->configureListmonk();
         Http::fake(function (Request $request) {
@@ -194,7 +194,7 @@ class LeadMagnetLeadApiTest extends TestCase
                     'id' => 91,
                     'email' => 'pessoa@gmail.com',
                 ]]]]),
-                'PATCH', 'PUT' => Http::response(['data' => true]),
+                'PUT' => Http::response(['data' => true]),
                 default => Http::response([], 404),
             };
         });
@@ -204,14 +204,12 @@ class LeadMagnetLeadApiTest extends TestCase
         ]))->assertCreated();
 
         $this->assertSame(91, LeadMagnetLead::firstOrFail()->listmonk_subscriber_id);
-        Http::assertSent(fn (Request $request): bool => $request->method() === 'PATCH'
-            && $request->url() === 'https://listmonk.test/api/subscribers/91'
-            && ! array_key_exists('lists', $request->data()));
         Http::assertSent(fn (Request $request): bool => $request->method() === 'PUT'
             && $request->url() === 'https://listmonk.test/api/subscribers/lists'
             && $request['action'] === 'add'
-            && $request['target_list_ids'] === [7]);
-        Http::assertNotSent(fn (Request $request): bool => $request->method() === 'POST');
+            && $request['target_list_ids'] === [7]
+            && $request['status'] === 'confirmed');
+        Http::assertNotSent(fn (Request $request): bool => in_array($request->method(), ['PATCH', 'POST'], true));
     }
 
     public function test_a_valid_signed_link_downloads_the_pdf_and_sets_downloaded_at_once(): void

@@ -132,10 +132,6 @@ class ListmonkClient
             return $subscriberId;
         }
 
-        $this->ensureSuccessful($this->client()->patch("subscribers/{$subscriberId}", [
-            'name' => $name,
-            'attribs' => $attributes,
-        ]));
         $this->ensureSuccessful($this->client()->put('subscribers/lists', [
             'ids' => [$subscriberId],
             'action' => 'add',
