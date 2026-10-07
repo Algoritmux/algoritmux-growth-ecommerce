@@ -190,7 +190,10 @@ class LeadMagnetLeadApiTest extends TestCase
         $this->configureListmonk();
         Http::fake(function (Request $request) {
             return match ($request->method()) {
-                'GET' => Http::response(['data' => ['results' => [['id' => 91]]]]),
+                'GET' => Http::response(['data' => ['results' => [[
+                    'id' => 91,
+                    'email' => 'pessoa@gmail.com',
+                ]]]]),
                 'PATCH', 'PUT' => Http::response(['data' => true]),
                 default => Http::response([], 404),
             };

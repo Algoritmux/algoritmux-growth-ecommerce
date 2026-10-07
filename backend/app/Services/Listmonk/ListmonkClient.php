@@ -148,26 +148,33 @@ class ListmonkClient
 
     private function findSubscriberIdByEmail(string $email): ?int
     {
-        $escapedEmail = str_replace("'", "''", $email);
+        $normalizedEmail = strtolower(trim($email));
         $response = $this->client()->get('subscribers', [
-            'query' => "subscribers.email = '{$escapedEmail}'",
+            'search' => $normalizedEmail,
             'page' => 1,
-            'per_page' => 1,
+            'per_page' => 100,
         ]);
         $this->ensureSuccessful($response);
         $results = (array) data_get($response->json(), 'data.results', []);
 
-        if ($results === []) {
-            return null;
+        foreach ($results as $subscriber) {
+            $subscriberEmail = data_get($subscriber, 'email');
+
+            if (! is_string($subscriberEmail)
+                || strtolower(trim($subscriberEmail)) !== $normalizedEmail) {
+                continue;
+            }
+
+            $subscriberId = $this->positiveInteger(data_get($subscriber, 'id'));
+
+            if ($subscriberId === null) {
+                throw new RuntimeException('Listmonk returned an invalid subscriber identifier.');
+            }
+
+            return $subscriberId;
         }
 
-        $subscriberId = $this->positiveInteger(data_get($results, '0.id'));
-
-        if ($subscriberId === null) {
-            throw new RuntimeException('Listmonk returned an invalid subscriber identifier.');
-        }
-
-        return $subscriberId;
+        return null;
     }
 
     private function client(): PendingRequest
