@@ -189,7 +189,7 @@ export function TermsOfUsePage() {
           <p>
             Dúvidas podem ser encaminhadas para
             <a href="mailto:contato@algoritmux.com"> contato@algoritmux.com</a> ou pelo
-            telefone <a href="tel:+5514991267766">+55 (14) 99126-7766</a>.
+            telefone <a href="tel:+5514982073282">+55 14 98207-3282</a>.
           </p>
         </section>
       </LegalDocument>

@@ -21,6 +21,9 @@ const TermsOfUsePage = lazy(() =>
 const LgpdPage = lazy(() =>
   import('./pages/LgpdPage').then((module) => ({ default: module.LgpdPage })),
 );
+const LinksPage = lazy(() =>
+  import('./pages/LinksPage').then((module) => ({ default: module.LinksPage })),
+);
 const TeamPage = lazy(() =>
   import('./pages/TeamPage').then((module) => ({ default: module.TeamPage })),
 );
@@ -32,6 +35,14 @@ function RouteSuspense({ children }: { children: ReactNode }) {
 export function App() {
   return (
     <Routes>
+      <Route
+        path="/links"
+        element={
+          <RouteSuspense>
+            <LinksPage />
+          </RouteSuspense>
+        }
+      />
       <Route element={<PublicLayout />}>
         <Route index element={<HomePage />} />
         <Route path="/index.html" element={<HomePage />} />

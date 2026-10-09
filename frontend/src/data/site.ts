@@ -3,8 +3,8 @@ export const site = {
   siteUrl: 'https://algoritmux.com',
   logo: '/images/branding/logo.png',
   email: 'contato@algoritmux.com',
-  phone: '+55 (14) 99126-7766',
-  whatsapp: 'https://wa.me/5514991267766',
+  phone: '+55 14 98207-3282',
+  whatsapp: 'https://wa.me/5514982073282',
   description:
     'Conectando dados, tecnologia e design para estruturar sistemas previsíveis de vendas corporativas.',
   socials: [

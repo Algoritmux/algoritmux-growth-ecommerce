@@ -222,7 +222,7 @@ export function PrivacyPolicyPage() {
             Para exercer direitos ou esclarecer dúvidas sobre privacidade, escreva para
             <a href="mailto:contato@algoritmux.com"> contato@algoritmux.com</a> com o
             assunto “Privacidade e LGPD”. Também é possível entrar em contato pelo telefone
-            <a href="tel:+5514991267766"> +55 (14) 99126-7766</a>. Poderemos solicitar
+            <a href="tel:+5514982073282"> +55 14 98207-3282</a>. Poderemos solicitar
             informações razoáveis para confirmar a identidade do solicitante e proteger os
             dados contra acesso indevido.
           </p>

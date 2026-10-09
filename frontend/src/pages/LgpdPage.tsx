@@ -128,7 +128,7 @@ export function LgpdPage() {
             Envie sua solicitação para
             <a href="mailto:contato@algoritmux.com"> contato@algoritmux.com</a> com o
             assunto “Privacidade e LGPD”. Se preferir, use o telefone
-            <a href="tel:+5514991267766"> +55 (14) 99126-7766</a> para receber orientação
+            <a href="tel:+5514982073282"> +55 14 98207-3282</a> para receber orientação
             sobre o canal de atendimento.
           </p>
           <p>Para facilitar a análise, informe:</p>

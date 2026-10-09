@@ -300,7 +300,7 @@ describe('navegação e diagnóstico', () => {
 
     expect(openSpy).toHaveBeenCalledWith(
       expect.stringContaining(
-        'https://wa.me/5514991267766?text=',
+        'https://wa.me/5514982073282?text=',
       ),
       '_blank',
       'noopener,noreferrer',

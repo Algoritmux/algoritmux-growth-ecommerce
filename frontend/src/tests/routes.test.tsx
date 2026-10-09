@@ -45,6 +45,7 @@ describe('rotas públicas', () => {
     ['/metodologia', /A Metodologia Algoritmux/i],
     ['/equipe', /Especialistas multidisciplinares/i],
     ['/blog', /Inteligência de Growth & Vendas/i],
+    ['/links', /Engenharia de conversão para transformar marketing em receita previsível\./i],
     ['/politica-de-privacidade', 'Política de Privacidade'],
     ['/termos-de-uso', 'Termos de Uso'],
     ['/lgpd', 'LGPD e seus direitos'],
@@ -68,6 +69,7 @@ describe('rotas públicas', () => {
   it.each([
     ['/metodologia', 'https://algoritmux.com/metodologia'],
     ['/equipe', 'https://algoritmux.com/equipe'],
+    ['/links', 'https://algoritmux.com/links'],
     ['/politica-de-privacidade', 'https://algoritmux.com/politica-de-privacidade'],
     ['/termos-de-uso', 'https://algoritmux.com/termos-de-uso'],
     ['/lgpd', 'https://algoritmux.com/lgpd'],
