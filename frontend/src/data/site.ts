@@ -2,7 +2,7 @@ export const site = {
   name: 'Algoritmux',
   siteUrl: 'https://algoritmux.com',
   logo: '/images/branding/logo.png',
-  email: 'contato@algoritmux.com.br',
+  email: 'contato@algoritmux.com',
   phone: '+55 (14) 99126-7766',
   whatsapp: 'https://wa.me/5514991267766',
   description:

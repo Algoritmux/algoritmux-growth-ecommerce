@@ -90,7 +90,8 @@ export function LeadMagnetForm({ isSubmitting, onSubmit }: LeadMagnetFormProps) 
         <input {...register('newsletter_consent')} type="checkbox" />
         <span>
           Quero receber novos conteúdos e insights da Algoritmux por e-mail.
-          A entrega do e-book não depende desta opção.
+          A entrega do e-book não depende desta opção. Saiba como tratamos seus
+          dados na <a href="/politica-de-privacidade">Política de Privacidade</a>.
         </span>
       </label>
 

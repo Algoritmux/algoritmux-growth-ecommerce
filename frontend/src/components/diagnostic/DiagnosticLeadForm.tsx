@@ -52,7 +52,7 @@ export function DiagnosticLeadForm({ isSubmitting }: { isSubmitting: boolean }) 
                   inputMode="tel"
                   autoComplete="tel"
                   maxLength={19}
-                  placeholder="(18) 99999-9999"
+                  placeholder="(14) 99999-9999"
                   onChange={(event) =>
                     field.onChange(formatBrazilianWhatsApp(event.target.value))
                   }
@@ -146,6 +146,12 @@ export function DiagnosticLeadForm({ isSubmitting }: { isSubmitting: boolean }) 
           ) : null}
         </div>
       </div>
+
+      <p className="diagnostic-form__privacy-notice">
+        Usaremos seus dados para receber e avaliar sua solicitação e entrar em
+        contato, conforme nossa{' '}
+        <a href="/politica-de-privacidade">Política de Privacidade</a>.
+      </p>
 
       <div className="diagnostic-actions diagnostic-actions--submit">
         <Button type="submit" size="lg" arrow loading={isSubmitting}>

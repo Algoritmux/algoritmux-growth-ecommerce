@@ -5,6 +5,7 @@ import { App } from './App';
 import './assets/styles/legacy.css';
 import './assets/styles/global.css';
 import './assets/styles/articles.css';
+import './assets/styles/legal.css';
 import './assets/styles/responsive.css';
 
 createRoot(document.getElementById('root')!).render(

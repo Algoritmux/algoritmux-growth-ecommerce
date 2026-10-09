@@ -12,6 +12,15 @@ const BlogPage = lazy(() =>
 const MethodologyPage = lazy(() =>
   import('./pages/MethodologyPage').then((module) => ({ default: module.MethodologyPage })),
 );
+const PrivacyPolicyPage = lazy(() =>
+  import('./pages/PrivacyPolicyPage').then((module) => ({ default: module.PrivacyPolicyPage })),
+);
+const TermsOfUsePage = lazy(() =>
+  import('./pages/TermsOfUsePage').then((module) => ({ default: module.TermsOfUsePage })),
+);
+const LgpdPage = lazy(() =>
+  import('./pages/LgpdPage').then((module) => ({ default: module.LgpdPage })),
+);
 const TeamPage = lazy(() =>
   import('./pages/TeamPage').then((module) => ({ default: module.TeamPage })),
 );
@@ -59,6 +68,30 @@ export function App() {
           }
         />
         <Route path="/blog.html" element={<Navigate to="/blog" replace />} />
+        <Route
+          path="/politica-de-privacidade"
+          element={
+            <RouteSuspense>
+              <PrivacyPolicyPage />
+            </RouteSuspense>
+          }
+        />
+        <Route
+          path="/termos-de-uso"
+          element={
+            <RouteSuspense>
+              <TermsOfUsePage />
+            </RouteSuspense>
+          }
+        />
+        <Route
+          path="/lgpd"
+          element={
+            <RouteSuspense>
+              <LgpdPage />
+            </RouteSuspense>
+          }
+        />
         <Route
           path="/blog/:slug"
           element={

@@ -20,6 +20,12 @@ export function Footer() {
             </Link>
           ))}
         </div>
+        <div className="footer-legal">
+          <h2>Legal</h2>
+          <Link to="/politica-de-privacidade">Política de Privacidade</Link>
+          <Link to="/termos-de-uso">Termos de Uso</Link>
+          <Link to="/lgpd">LGPD</Link>
+        </div>
         <div className="footer-contact">
           <h2>Contato</h2>
           <a href={`mailto:${site.email}`}>{site.email}</a>

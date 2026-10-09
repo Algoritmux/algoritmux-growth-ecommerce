@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { App } from '../App';
@@ -196,6 +196,12 @@ describe('navegação e diagnóstico', () => {
         name: 'Enviar diagnóstico',
       }),
     ).toBeVisible();
+
+    expect(
+      within(screen.getByRole('dialog')).getByRole('link', {
+        name: 'Política de Privacidade',
+      }),
+    ).toHaveAttribute('href', '/politica-de-privacidade');
   });
 
   it('envia o diagnóstico, normaliza o payload e mostra o agradecimento', async () => {

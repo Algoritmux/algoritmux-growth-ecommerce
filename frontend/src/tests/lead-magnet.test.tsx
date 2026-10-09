@@ -40,6 +40,10 @@ describe('lead magnet', () => {
     expect(screen.getByRole('form', { name: 'Receber e-book gratuito' })).toBeVisible();
     expect(screen.getByRole('checkbox')).not.toBeChecked();
     expect(screen.getByText(/A entrega do e-book não depende/)).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Política de Privacidade' })).toHaveAttribute(
+      'href',
+      '/politica-de-privacidade',
+    );
 
     await userEvent.setup().click(
       screen.getByRole('button', { name: /Receber e-book gratuito/ }),
