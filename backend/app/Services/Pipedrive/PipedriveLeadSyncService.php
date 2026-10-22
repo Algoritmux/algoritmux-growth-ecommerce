@@ -107,7 +107,7 @@ class PipedriveLeadSyncService
             ]);
         }
 
-        if (! $personId && filled($lead->whatsapp)) {
+        if (! filled($lead->email) && filled($lead->whatsapp)) {
             $personId = $this->firstSearchResultId('persons/search', [
                 'term' => $lead->whatsapp,
                 'fields' => 'phone',
