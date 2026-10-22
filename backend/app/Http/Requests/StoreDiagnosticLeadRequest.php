@@ -97,6 +97,16 @@ class StoreDiagnosticLeadRequest extends FormRequest
                     'Plataforma / Portal Web',
                 ]),
             ],
+            'sales_model' => [
+                Rule::requiredIf(fn (): bool => $this->input('source_page') === 'lp_geolocalizacao'),
+                'nullable',
+                'string',
+                'max:64',
+                Rule::in([
+                    'PDV e compra rápida',
+                    'Venda consultiva',
+                ]),
+            ],
             'source_page' => ['nullable', 'string', 'max:255'],
             'utm_source' => ['nullable', 'string', 'max:255'],
             'utm_medium' => ['nullable', 'string', 'max:255'],

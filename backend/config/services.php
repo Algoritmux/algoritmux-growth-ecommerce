@@ -49,6 +49,7 @@ return [
         'deal_source_page_field_key' => env('PIPEDRIVE_DEAL_SOURCE_PAGE_FIELD_KEY'),
         'deal_local_id_field_key' => env('PIPEDRIVE_DEAL_LOCAL_ID_FIELD_KEY'),
         'deal_project_type_field_key' => env('PIPEDRIVE_DEAL_PROJECT_TYPE_FIELD_KEY'),
+        'deal_sales_model_field_key' => env('PIPEDRIVE_DEAL_SALES_MODEL_FIELD_KEY'),
         'deal_utm_source_field_key' => env('PIPEDRIVE_DEAL_UTM_SOURCE_FIELD_KEY'),
         'deal_utm_medium_field_key' => env('PIPEDRIVE_DEAL_UTM_MEDIUM_FIELD_KEY'),
         'deal_utm_campaign_field_key' => env('PIPEDRIVE_DEAL_UTM_CAMPAIGN_FIELD_KEY'),
@@ -66,6 +67,10 @@ return [
             'Site Institucional / B2B' => env('PIPEDRIVE_DEAL_PROJECT_TYPE_SITE_INSTITUTIONAL_B2B_OPTION_ID'),
             'Loja Virtual / E-commerce' => env('PIPEDRIVE_DEAL_PROJECT_TYPE_ECOMMERCE_OPTION_ID'),
             'Plataforma / Portal Web' => env('PIPEDRIVE_DEAL_PROJECT_TYPE_PLATFORM_PORTAL_WEB_OPTION_ID'),
+        ],
+        'sales_model_option_ids' => [
+            'PDV e compra rápida' => env('PIPEDRIVE_DEAL_SALES_MODEL_PDV_QUICK_PURCHASE_OPTION_ID'),
+            'Venda consultiva' => env('PIPEDRIVE_DEAL_SALES_MODEL_CONSULTATIVE_OPTION_ID'),
         ],
     ],
 

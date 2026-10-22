@@ -17,6 +17,13 @@ class DiagnosticLeadApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Http::preventStrayRequests();
+    }
+
     public function test_it_creates_a_normalized_diagnostic_lead_and_syncs_it_with_pipedrive(): void
     {
         $this->configurePipedrive();
@@ -324,6 +331,162 @@ class DiagnosticLeadApiTest extends TestCase
         Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
             && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/deals')
             && ! array_key_exists('project_type_field', $request['custom_fields']));
+    }
+
+    #[DataProvider('validSalesModels')]
+    public function test_it_accepts_and_persists_valid_sales_models_for_the_geolocation_page(string $salesModel): void
+    {
+        Config::set('services.pipedrive.api_token', null);
+        Http::fake();
+
+        $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            'source_page' => 'lp_geolocalizacao',
+            'sales_model' => $salesModel,
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('diagnostic_leads', [
+            'source_page' => 'lp_geolocalizacao',
+            'sales_model' => $salesModel,
+        ]);
+        Http::assertNothingSent();
+    }
+
+    public function test_it_rejects_an_invalid_sales_model(): void
+    {
+        $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            'source_page' => 'lp_geolocalizacao',
+            'sales_model' => 'Venda online',
+        ])->assertUnprocessable()->assertJsonValidationErrors(['sales_model']);
+
+        $this->assertDatabaseCount('diagnostic_leads', 0);
+    }
+
+    #[DataProvider('missingSalesModels')]
+    public function test_it_requires_a_sales_model_for_the_geolocation_page(?string $salesModel): void
+    {
+        $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            'source_page' => 'lp_geolocalizacao',
+            'sales_model' => $salesModel,
+        ])->assertUnprocessable()->assertJsonValidationErrors(['sales_model']);
+
+        $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            'source_page' => 'lp_geolocalizacao',
+        ])->assertUnprocessable()->assertJsonValidationErrors(['sales_model']);
+
+        $this->assertDatabaseCount('diagnostic_leads', 0);
+    }
+
+    #[DataProvider('existingSourcePages')]
+    public function test_existing_pages_do_not_require_a_sales_model(array $attributes): void
+    {
+        Config::set('services.pipedrive.api_token', null);
+        Http::fake();
+
+        $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            ...$attributes,
+        ])->assertCreated()->assertJsonStructure(['message', 'data' => ['public_id', 'status']]);
+
+        $this->assertNull(DiagnosticLead::firstOrFail()->sales_model);
+        Http::assertNothingSent();
+    }
+
+    #[DataProvider('pipedriveSalesModelOptions')]
+    public function test_it_maps_sales_model_to_the_configured_pipedrive_option(string $salesModel, int $optionId): void
+    {
+        $this->configurePipedrive();
+        Http::fakeSequence()
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['id' => 101]])
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['id' => 202]])
+            ->push(['data' => ['id' => 303]]);
+
+        $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            'source_page' => 'lp_geolocalizacao',
+            'sales_model' => $salesModel,
+        ])->assertCreated();
+
+        $this->assertSame(DiagnosticLead::PIPEDRIVE_SYNC_SYNCED, DiagnosticLead::firstOrFail()->pipedrive_sync_status);
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
+            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/deals')
+            && $request['custom_fields']['sales_model_field'] === $optionId
+            && $request['custom_fields']['source_page_field'] === 'lp_geolocalizacao'
+            && ! array_key_exists('sales_model_field', $request->data()));
+    }
+
+    public function test_it_syncs_the_lead_when_sales_model_pipedrive_configuration_is_missing(): void
+    {
+        $this->configurePipedrive();
+        Config::set('services.pipedrive.deal_sales_model_field_key', null);
+        Config::set('services.pipedrive.sales_model_option_ids', []);
+        Http::fakeSequence()
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['id' => 101]])
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['id' => 202]])
+            ->push(['data' => ['id' => 303]]);
+
+        $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            'source_page' => 'lp_geolocalizacao',
+            'sales_model' => 'Venda consultiva',
+        ])->assertCreated();
+
+        $lead = DiagnosticLead::firstOrFail();
+        $this->assertSame('Venda consultiva', $lead->sales_model);
+        $this->assertSame(DiagnosticLead::PIPEDRIVE_SYNC_SYNCED, $lead->pipedrive_sync_status);
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
+            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/deals')
+            && ! array_key_exists('sales_model_field', $request['custom_fields']));
+    }
+
+    public function test_it_does_not_send_a_sales_model_to_pipedrive_for_existing_pages(): void
+    {
+        $this->configurePipedrive();
+        Http::fakeSequence()
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['id' => 101]])
+            ->push(['data' => ['items' => []]])
+            ->push(['data' => ['id' => 202]])
+            ->push(['data' => ['id' => 303]]);
+
+        $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            'project_type' => 'Loja Virtual / E-commerce',
+        ])->assertCreated();
+
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
+            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/deals')
+            && $request['custom_fields']['project_type_field'] === 72
+            && ! array_key_exists('sales_model_field', $request['custom_fields']));
+    }
+
+    public function test_it_saves_the_sales_model_when_pipedrive_fails(): void
+    {
+        $this->configurePipedrive();
+        Http::fake(['*' => Http::response(['error' => 'service unavailable'], 503)]);
+
+        $response = $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            'source_page' => 'lp_geolocalizacao',
+            'sales_model' => 'PDV e compra rápida',
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('data.status', 'new')
+            ->assertJsonStructure(['message', 'data' => ['public_id', 'status']]);
+        $lead = DiagnosticLead::firstOrFail();
+        $this->assertSame('PDV e compra rápida', $lead->sales_model);
+        $this->assertSame('lp_geolocalizacao', $lead->source_page);
+        $this->assertSame(DiagnosticLead::PIPEDRIVE_SYNC_FAILED, $lead->pipedrive_sync_status);
+        $this->assertNull($lead->pipedrive_deal_id);
     }
 
     public function test_it_normalizes_and_accepts_flexible_public_websites(): void
@@ -845,6 +1008,7 @@ class DiagnosticLeadApiTest extends TestCase
             'deal_source_page_field_key' => 'source_page_field',
             'deal_local_id_field_key' => 'local_id_field',
             'deal_project_type_field_key' => 'project_type_field',
+            'deal_sales_model_field_key' => 'sales_model_field',
             'deal_utm_source_field_key' => 'utm_source_field',
             'deal_utm_medium_field_key' => 'utm_medium_field',
             'deal_utm_campaign_field_key' => 'utm_campaign_field',
@@ -862,6 +1026,10 @@ class DiagnosticLeadApiTest extends TestCase
                 'Site Institucional / B2B' => 71,
                 'Loja Virtual / E-commerce' => 72,
                 'Plataforma / Portal Web' => 73,
+            ],
+            'sales_model_option_ids' => [
+                'PDV e compra rápida' => 81,
+                'Venda consultiva' => 82,
             ],
         ]);
     }
@@ -887,6 +1055,52 @@ class DiagnosticLeadApiTest extends TestCase
             'site institucional' => ['Site Institucional / B2B', 71],
             'loja virtual' => ['Loja Virtual / E-commerce', 72],
             'plataforma' => ['Plataforma / Portal Web', 73],
+        ];
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function validSalesModels(): array
+    {
+        return [
+            'pdv' => ['PDV e compra rápida'],
+            'consultiva' => ['Venda consultiva'],
+        ];
+    }
+
+    /**
+     * @return array<string, array{?string}>
+     */
+    public static function missingSalesModels(): array
+    {
+        return [
+            'null' => [null],
+            'empty string' => [''],
+        ];
+    }
+
+    /**
+     * @return array<string, array{array<string, string>}>
+     */
+    public static function existingSourcePages(): array
+    {
+        return [
+            'home' => [['source_page' => '/']],
+            'lp sites' => [['source_page' => 'lp_sites', 'project_type' => 'Site Institucional / B2B']],
+            'lp cases de sucesso' => [['source_page' => 'lp_cases_sucesso']],
+            'pathname' => [['source_page' => '/diagnostico']],
+        ];
+    }
+
+    /**
+     * @return array<string, array{string, int}>
+     */
+    public static function pipedriveSalesModelOptions(): array
+    {
+        return [
+            'pdv' => ['PDV e compra rápida', 81],
+            'consultiva' => ['Venda consultiva', 82],
         ];
     }
 

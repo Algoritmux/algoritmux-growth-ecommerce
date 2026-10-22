@@ -23,6 +23,7 @@ class DiagnosticLead extends Model
         'website',
         'revenue_range',
         'project_type',
+        'sales_model',
         'source_page',
         'utm_source',
         'utm_medium',

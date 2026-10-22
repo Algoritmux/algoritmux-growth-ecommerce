@@ -166,6 +166,7 @@ class PipedriveLeadSyncService
         $this->addOptionalField($customFields, 'deal_source_page_field_key', $lead->source_page);
         $this->addOptionalField($customFields, 'deal_local_id_field_key', $lead->public_id);
         $this->addOptionalField($customFields, 'deal_project_type_field_key', $this->projectTypeOptionId($lead));
+        $this->addOptionalField($customFields, 'deal_sales_model_field_key', $this->salesModelOptionId($lead));
         $this->addOptionalField($customFields, 'deal_utm_source_field_key', $lead->utm_source);
         $this->addOptionalField($customFields, 'deal_utm_medium_field_key', $lead->utm_medium);
         $this->addOptionalField($customFields, 'deal_utm_campaign_field_key', $lead->utm_campaign);
@@ -348,6 +349,18 @@ class PipedriveLeadSyncService
 
         $optionIds = config('services.pipedrive.project_type_option_ids', []);
         $optionId = is_array($optionIds) ? ($optionIds[$lead->project_type] ?? null) : null;
+
+        return is_numeric($optionId) ? (int) $optionId : null;
+    }
+
+    private function salesModelOptionId(DiagnosticLead $lead): ?int
+    {
+        if (! filled($lead->sales_model)) {
+            return null;
+        }
+
+        $optionIds = config('services.pipedrive.sales_model_option_ids', []);
+        $optionId = is_array($optionIds) ? ($optionIds[$lead->sales_model] ?? null) : null;
 
         return is_numeric($optionId) ? (int) $optionId : null;
     }
