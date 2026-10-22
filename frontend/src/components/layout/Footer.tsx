@@ -19,6 +19,9 @@ export function Footer() {
               {item.label}
             </Link>
           ))}
+          <ExternalLink href="https://lp-sites.algoritmux.com">Venda de Sites</ExternalLink>
+          <ExternalLink href="https://lp-cases-sucesso.algoritmux.com">Cases de Sucesso</ExternalLink>
+          <ExternalLink href="https://lp-geolocalizacao.algoritmux.com">Geolocalização</ExternalLink>
         </div>
         <div className="footer-legal">
           <h2>Legal</h2>
