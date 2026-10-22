@@ -23,10 +23,12 @@ class DiagnosticLeadController extends Controller
         try {
             $pipedrive->sync($lead);
         } catch (Throwable) {
-            $lead->forceFill([
+            DiagnosticLead::query()->whereKey($lead->getKey())->update([
                 'pipedrive_sync_status' => DiagnosticLead::PIPEDRIVE_SYNC_FAILED,
                 'pipedrive_sync_error' => 'Pipedrive synchronization failed.',
-            ])->save();
+            ]);
+
+            $lead->refresh();
         }
 
         return response()->json([

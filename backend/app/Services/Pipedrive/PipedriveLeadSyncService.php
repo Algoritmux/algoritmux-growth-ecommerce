@@ -49,7 +49,7 @@ class PipedriveLeadSyncService
                 $lead->forceFill(['pipedrive_person_id' => $personId])->save();
             }
 
-            $dealId = $lead->pipedrive_deal_id ?: $this->findOrCreateDeal($lead, $organizationId, $personId);
+            $dealId = $lead->pipedrive_deal_id ?: $this->createDeal($lead, $organizationId, $personId);
 
             $lead->forceFill([
                 'pipedrive_deal_id' => $dealId,
@@ -145,27 +145,9 @@ class PipedriveLeadSyncService
         return $this->createdId($this->client()->post('persons', $payload));
     }
 
-    private function findOrCreateDeal(DiagnosticLead $lead, ?int $organizationId, int $personId): int
+    private function createDeal(DiagnosticLead $lead, ?int $organizationId, int $personId): int
     {
         $title = $this->dealTitle($lead);
-        $search = [
-            'term' => $title,
-            'fields' => 'title',
-            'exact_match' => true,
-            'person_id' => $personId,
-            'limit' => 1,
-        ];
-
-        if ($organizationId) {
-            $search['organization_id'] = $organizationId;
-        }
-
-        $dealId = $this->firstSearchResultId('deals/search', $search);
-
-        if ($dealId) {
-            return $dealId;
-        }
-
         $payload = [
             'title' => $title,
             'person_id' => $personId,

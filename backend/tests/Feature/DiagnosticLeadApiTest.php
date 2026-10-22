@@ -26,7 +26,6 @@ class DiagnosticLeadApiTest extends TestCase
             ->push(['data' => ['items' => []]])
             ->push(['data' => ['items' => []]])
             ->push(['data' => ['id' => 202]])
-            ->push(['data' => ['items' => []]])
             ->push(['data' => ['id' => 303]]);
 
         $response = $this->postJson('/api/v1/leads/diagnostic', $this->leadPayload());
@@ -57,13 +56,17 @@ class DiagnosticLeadApiTest extends TestCase
             $lead->public_id,
         );
 
-        Http::assertSentCount(7);
+        Http::assertSentCount(6);
+        Http::assertNotSent(fn (Request $request): bool => $request->method() === 'GET'
+            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/deals/search'));
         Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
             && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/deals')
             && $request['title'] === 'Diagnóstico | Empresa de Teste | Pessoa de Teste'
             && $request['pipeline_id'] === 1
             && $request['stage_id'] === 1
             && $request['owner_id'] === 23227558
+            && $request['org_id'] === 101
+            && $request['person_id'] === 202
             && $request['custom_fields']['revenue_field'] === 60
             && $request['custom_fields']['source_field'] === 64
             && $request['custom_fields']['source_page_field'] === '/'
@@ -217,7 +220,6 @@ class DiagnosticLeadApiTest extends TestCase
             ->push(['data' => ['items' => []]])
             ->push(['data' => ['items' => []]])
             ->push(['data' => ['id' => 202]])
-            ->push(['data' => ['items' => []]])
             ->push(['data' => ['id' => 303]]);
         $payload = $this->leadPayload();
 
@@ -290,7 +292,6 @@ class DiagnosticLeadApiTest extends TestCase
             ->push(['data' => ['items' => []]])
             ->push(['data' => ['items' => []]])
             ->push(['data' => ['id' => 202]])
-            ->push(['data' => ['items' => []]])
             ->push(['data' => ['id' => 303]]);
 
         $this->postJson('/api/v1/leads/diagnostic', [
@@ -314,7 +315,6 @@ class DiagnosticLeadApiTest extends TestCase
             ->push(['data' => ['items' => []]])
             ->push(['data' => ['items' => []]])
             ->push(['data' => ['id' => 202]])
-            ->push(['data' => ['items' => []]])
             ->push(['data' => ['id' => 303]]);
 
         $this->postJson('/api/v1/leads/diagnostic', [
@@ -457,6 +457,108 @@ class DiagnosticLeadApiTest extends TestCase
         $this->assertSame('Pipedrive HTTP 503: service is unavailable.', $lead->pipedrive_sync_error);
     }
 
+    public function test_different_leads_with_the_same_person_and_organization_create_different_deals(): void
+    {
+        $this->configurePipedrive();
+        $firstLead = $this->createLead([
+            'pipedrive_organization_id' => 78,
+            'pipedrive_person_id' => 291,
+            'pipedrive_sync_status' => DiagnosticLead::PIPEDRIVE_SYNC_PENDING,
+            'project_type' => 'Site Institucional / B2B',
+            'source_page' => 'lp_sites',
+            'utm_source' => 'google',
+            'utm_medium' => 'cpc',
+            'utm_campaign' => 'sites',
+            'utm_content' => 'hero',
+            'utm_term' => 'site-institucional',
+        ]);
+        $secondLead = $this->createLead([
+            'pipedrive_organization_id' => 78,
+            'pipedrive_person_id' => 291,
+            'pipedrive_sync_status' => DiagnosticLead::PIPEDRIVE_SYNC_PENDING,
+        ]);
+        Http::fakeSequence()
+            ->push(['data' => ['id' => 168]])
+            ->push(['data' => ['id' => 169]]);
+
+        $this->artisan('pipedrive:sync-leads', ['--limit' => 2])
+            ->expectsOutput('Pipedrive sync complete: processed=2 synced=2 failed=0.')
+            ->assertExitCode(0);
+
+        $this->assertSame(168, $firstLead->refresh()->pipedrive_deal_id);
+        $this->assertSame(169, $secondLead->refresh()->pipedrive_deal_id);
+        Http::assertSentCount(2);
+        Http::assertNotSent(fn (Request $request): bool => $request->method() === 'GET'
+            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/deals/search'));
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
+            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/deals')
+            && $request['org_id'] === 78
+            && $request['person_id'] === 291
+            && $request['pipeline_id'] === 1
+            && $request['stage_id'] === 1
+            && $request['owner_id'] === 23227558
+            && $request['custom_fields']['local_id_field'] === $firstLead->public_id
+            && $request['custom_fields']['revenue_field'] === 60
+            && $request['custom_fields']['source_field'] === 64
+            && $request['custom_fields']['source_page_field'] === 'lp_sites'
+            && $request['custom_fields']['project_type_field'] === 71
+            && $request['custom_fields']['utm_source_field'] === 'google'
+            && $request['custom_fields']['utm_medium_field'] === 'cpc'
+            && $request['custom_fields']['utm_campaign_field'] === 'sites'
+            && $request['custom_fields']['utm_content_field'] === 'hero'
+            && $request['custom_fields']['utm_term_field'] === 'site-institucional');
+    }
+
+    public function test_a_lead_with_an_existing_deal_id_remains_idempotent(): void
+    {
+        $this->configurePipedrive();
+        $lead = $this->createLead([
+            'pipedrive_organization_id' => 78,
+            'pipedrive_person_id' => 291,
+            'pipedrive_deal_id' => 168,
+            'pipedrive_sync_status' => DiagnosticLead::PIPEDRIVE_SYNC_FAILED,
+        ]);
+        Http::fake();
+
+        $this->artisan('pipedrive:sync-leads', ['--limit' => 1])
+            ->expectsOutput('Pipedrive sync complete: processed=1 synced=1 failed=0.')
+            ->assertExitCode(0);
+
+        $lead->refresh();
+        $this->assertSame(168, $lead->pipedrive_deal_id);
+        $this->assertSame(DiagnosticLead::PIPEDRIVE_SYNC_SYNCED, $lead->pipedrive_sync_status);
+        Http::assertNothingSent();
+    }
+
+    public function test_a_conflicting_deal_id_does_not_cause_a_second_save_failure_in_the_controller(): void
+    {
+        $this->configurePipedrive();
+        $existingLead = $this->createLead([
+            'pipedrive_organization_id' => 78,
+            'pipedrive_person_id' => 291,
+            'pipedrive_deal_id' => 168,
+            'pipedrive_sync_status' => DiagnosticLead::PIPEDRIVE_SYNC_SYNCED,
+        ]);
+        Http::fake(function (Request $request) {
+            $path = parse_url($request->url(), PHP_URL_PATH);
+
+            return match ([$request->method(), $path]) {
+                ['GET', '/api/v2/organizations/search'] => Http::response(['data' => ['items' => [['item' => ['id' => 78]]]]]),
+                ['GET', '/api/v2/organizations/78'] => Http::response(['data' => ['website' => 'https://empresa.com']]),
+                ['GET', '/api/v2/persons/search'] => Http::response(['data' => ['items' => [['item' => ['id' => 291]]]]]),
+                ['POST', '/api/v2/deals'] => Http::response(['data' => ['id' => 168]]),
+                default => Http::response(['error' => 'Unexpected request'], 500),
+            };
+        });
+
+        $this->postJson('/api/v1/leads/diagnostic', $this->leadPayload())->assertCreated();
+
+        $newLead = DiagnosticLead::query()->whereKeyNot($existingLead->getKey())->firstOrFail();
+        $this->assertNull($newLead->pipedrive_deal_id);
+        $this->assertSame(DiagnosticLead::PIPEDRIVE_SYNC_FAILED, $newLead->pipedrive_sync_status);
+        $this->assertSame('Pipedrive synchronization failed.', $newLead->pipedrive_sync_error);
+    }
+
     public function test_it_updates_an_existing_organization_website_only_when_remote_value_is_empty(): void
     {
         $this->configurePipedrive();
@@ -468,7 +570,7 @@ class DiagnosticLeadApiTest extends TestCase
                 ['GET', '/api/v2/organizations/101'] => Http::response(['data' => ['website' => null]]),
                 ['PATCH', '/api/v2/organizations/101'] => Http::response(['data' => ['id' => 101]]),
                 ['GET', '/api/v2/persons/search'] => Http::response(['data' => ['items' => [['item' => ['id' => 202]]]]]),
-                ['GET', '/api/v2/deals/search'] => Http::response(['data' => ['items' => [['item' => ['id' => 303]]]]]),
+                ['POST', '/api/v2/deals'] => Http::response(['data' => ['id' => 303]]),
                 default => Http::response(['error' => 'Unexpected request'], 500),
             };
         });
@@ -478,9 +580,8 @@ class DiagnosticLeadApiTest extends TestCase
         Http::assertSent(fn (Request $request): bool => $request->method() === 'PATCH'
             && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/organizations/101')
             && $request['website'] === 'https://empresa.com');
-        Http::assertSent(fn (Request $request): bool => $request->method() === 'GET'
-            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/deals/search')
-            && $request['term'] === 'Diagnóstico | Empresa de Teste | Pessoa de Teste');
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
+            && str_ends_with(parse_url($request->url(), PHP_URL_PATH), '/deals'));
     }
 
     public function test_it_does_not_overwrite_an_existing_organization_website(): void
@@ -493,7 +594,7 @@ class DiagnosticLeadApiTest extends TestCase
                 ['GET', '/api/v2/organizations/search'] => Http::response(['data' => ['items' => [['item' => ['id' => 101]]]]]),
                 ['GET', '/api/v2/organizations/101'] => Http::response(['data' => ['website' => 'https://existente.com']]),
                 ['GET', '/api/v2/persons/search'] => Http::response(['data' => ['items' => [['item' => ['id' => 202]]]]]),
-                ['GET', '/api/v2/deals/search'] => Http::response(['data' => ['items' => [['item' => ['id' => 303]]]]]),
+                ['POST', '/api/v2/deals'] => Http::response(['data' => ['id' => 303]]),
                 default => Http::response(['error' => 'Unexpected request'], 500),
             };
         });
@@ -514,7 +615,6 @@ class DiagnosticLeadApiTest extends TestCase
             'pipedrive_sync_status' => DiagnosticLead::PIPEDRIVE_SYNC_FAILED,
         ]);
         Http::fakeSequence()
-            ->push(['data' => ['items' => []]])
             ->push(['data' => ['id' => 303]]);
 
         $this->artisan('pipedrive:sync-leads', ['--limit' => 1])->assertExitCode(0);
@@ -555,7 +655,6 @@ class DiagnosticLeadApiTest extends TestCase
         ]);
 
         Http::fakeSequence()
-            ->push(['data' => ['items' => []]])
             ->push(['data' => ['id' => 303]]);
 
         $this->artisan('pipedrive:sync-leads', ['--limit' => 1])
@@ -576,7 +675,7 @@ class DiagnosticLeadApiTest extends TestCase
         $this->artisan('pipedrive:sync-leads', ['--limit' => 1])
             ->expectsOutput('Pipedrive sync complete: processed=0 synced=0 failed=0.')
             ->assertExitCode(0);
-        Http::assertSentCount(2);
+        Http::assertSentCount(1);
     }
 
     public function test_it_does_not_send_empty_utm_values_to_pipedrive(): void
@@ -591,7 +690,6 @@ class DiagnosticLeadApiTest extends TestCase
             'utm_campaign' => '   ',
         ]);
         Http::fakeSequence()
-            ->push(['data' => ['items' => []]])
             ->push(['data' => ['id' => 303]]);
 
         $this->artisan('pipedrive:sync-leads', ['--limit' => 1])->assertExitCode(0);
@@ -621,7 +719,6 @@ class DiagnosticLeadApiTest extends TestCase
             'pipedrive_sync_status' => DiagnosticLead::PIPEDRIVE_SYNC_FAILED,
         ]);
         Http::fakeSequence()
-            ->push(['data' => ['items' => []]])
             ->push(['data' => ['id' => 303]]);
 
         $this->artisan('pipedrive:sync-leads', ['--limit' => 1])->assertExitCode(0);
