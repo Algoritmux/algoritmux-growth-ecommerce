@@ -234,6 +234,41 @@ class DiagnosticLeadApiTest extends TestCase
         $this->assertDatabaseCount('diagnostic_leads', 0);
     }
 
+    #[DataProvider('lpSitesEmails')]
+    public function test_the_success_cases_page_accepts_any_email_domain(string $email): void
+    {
+        Config::set('services.pipedrive.api_token', null);
+        Http::fake();
+
+        $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            'source_page' => 'lp_cases_sucesso',
+            'email' => $email,
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('diagnostic_leads', [
+            'email' => $email,
+            'source_page' => 'lp_cases_sucesso',
+        ]);
+        Http::assertNothingSent();
+    }
+
+    public function test_the_success_cases_page_still_requires_a_valid_email(): void
+    {
+        Config::set('services.pipedrive.api_token', null);
+        Http::fake();
+
+        $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            'source_page' => 'lp_cases_sucesso',
+            'email' => 'email-invalido',
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['email']);
+
+        $this->assertDatabaseCount('diagnostic_leads', 0);
+    }
+
     #[DataProvider('corporateEmailPages')]
     public function test_other_pages_keep_rejecting_free_email_domains(string $sourcePage): void
     {
@@ -259,7 +294,7 @@ class DiagnosticLeadApiTest extends TestCase
     public static function corporateEmailPages(): array
     {
         return [
-            'cases de sucesso' => ['lp_cases_sucesso'],
+            'outra lp' => ['lp_outra_pagina'],
             'pagina padrao' => ['/'],
         ];
     }

@@ -58,8 +58,8 @@ class StoreDiagnosticLeadRequest extends FormRequest
                         'empresa.com', 'empresa.com.br', 'suaempresa.com', 'suaempresa.com.br', 'teste.com',
                     ];
 
-                    // A LP Sites e a LP Geolocalização aceitam qualquer domínio de e-mail válido.
-                    if (in_array($this->input('source_page'), ['lp_sites', 'lp_geolocalizacao'], true)) {
+                    // A LP Sites, a LP Geolocalização e a LP Cases de Sucesso aceitam qualquer domínio de e-mail válido.
+                    if (in_array($this->input('source_page'), ['lp_sites', 'lp_geolocalizacao', 'lp_cases_sucesso'], true)) {
                         return;
                     }
 
