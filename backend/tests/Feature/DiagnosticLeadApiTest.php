@@ -146,6 +146,87 @@ class DiagnosticLeadApiTest extends TestCase
         Http::assertNothingSent();
     }
 
+    #[DataProvider('lpSitesEmails')]
+    public function test_the_sites_page_accepts_any_email_domain(string $email): void
+    {
+        Config::set('services.pipedrive.api_token', null);
+        Http::fake();
+
+        $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            'source_page' => 'lp_sites',
+            'email' => $email,
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('diagnostic_leads', [
+            'email' => $email,
+            'source_page' => 'lp_sites',
+        ]);
+        Http::assertNothingSent();
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function lpSitesEmails(): array
+    {
+        return [
+            'gmail' => ['usuario@gmail.com'],
+            'outlook' => ['usuario@outlook.com'],
+            'hotmail' => ['usuario@hotmail.com'],
+            'yahoo' => ['usuario@yahoo.com'],
+            'icloud' => ['usuario@icloud.com'],
+            'corporativo' => ['usuario@empresa.com.br'],
+            'qualquer dominio' => ['usuario@qualquer-dominio.com'],
+        ];
+    }
+
+    public function test_the_sites_page_still_requires_a_valid_email(): void
+    {
+        Config::set('services.pipedrive.api_token', null);
+        Http::fake();
+
+        $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            'source_page' => 'lp_sites',
+            'email' => 'email-invalido',
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['email']);
+
+        $this->assertDatabaseCount('diagnostic_leads', 0);
+    }
+
+    #[DataProvider('corporateEmailPages')]
+    public function test_other_pages_keep_rejecting_free_email_domains(string $sourcePage): void
+    {
+        Config::set('services.pipedrive.api_token', null);
+        Http::fake();
+
+        $this->postJson('/api/v1/leads/diagnostic', [
+            ...$this->leadPayload(),
+            'source_page' => $sourcePage,
+            'sales_model' => 'Venda consultiva',
+            'email' => 'usuario@gmail.com',
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['email' => 'Utilize um e-mail corporativo.']);
+
+        $this->assertDatabaseCount('diagnostic_leads', 0);
+        Http::assertNothingSent();
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function corporateEmailPages(): array
+    {
+        return [
+            'cases de sucesso' => ['lp_cases_sucesso'],
+            'geolocalizacao' => ['lp_geolocalizacao'],
+        ];
+    }
+
     public function test_it_accepts_common_brazilian_whatsapp_formats(): void
     {
         Config::set('services.pipedrive.api_token', null);

@@ -58,6 +58,11 @@ class StoreDiagnosticLeadRequest extends FormRequest
                         'empresa.com', 'empresa.com.br', 'suaempresa.com', 'suaempresa.com.br', 'teste.com',
                     ];
 
+                    // A LP Sites aceita qualquer domínio de e-mail válido.
+                    if ($this->input('source_page') === 'lp_sites') {
+                        return;
+                    }
+
                     if (! is_string($value)) {
                         return;
                     }
