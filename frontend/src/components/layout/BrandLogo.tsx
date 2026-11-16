@@ -5,10 +5,10 @@ export function BrandLogo() {
   return (
     <Link to="/" className="brand-logo" aria-label="Algoritmux — página inicial">
       <ResponsiveImage
-        src="/images/branding/logo.png"
+        src="/images/branding/1.png"
         alt="Algoritmux"
-        width={190}
-        height={48}
+        width={1024}
+        height={241}
         priority
       />
     </Link>
