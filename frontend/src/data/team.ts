@@ -45,21 +45,13 @@ export const team: TeamMember[] = [
     imageAlt: 'Juan Augusto, gestor de tráfego da Algoritmux',
   },
   {
-    id: 'giovanny-de-moraes',
-    name: 'Giovanny de Moraes',
+    id: 'vitor-theodoro',
+    name: 'Vitor Theodoro',
     role: 'Desenvolvedor',
     description:
       'Desenvolve soluções digitais e implementa melhorias técnicas nos projetos.',
-    image: '/images/equipe/giovanny.jpg',
-    imageAlt: 'Giovanny de Moraes, desenvolvedor da Algoritmux',
-  },
-  {
-    id: 'flavia-marcilio',
-    name: 'Flavia Marcilio',
-    role: 'Copywriter',
-    description: 'Cria textos estratégicos para comunicação e conversão.',
-    image: '/images/equipe/flavia.jpg',
-    imageAlt: 'Flavia Marcilio, copywriter da Algoritmux',
+    image: '/images/equipe/vitor.jpg',
+    imageAlt: 'Vitor Theodoro, desenvolvedor da Algoritmux',
   },
   {
     id: 'sabrina-bigella',
