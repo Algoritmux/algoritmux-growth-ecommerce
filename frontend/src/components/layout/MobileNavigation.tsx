@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
-import { navigation } from '../../data/navigation';
+import { externalNavigation, navigation } from '../../data/navigation';
+import { ExternalLink } from '../common/ExternalLink';
 
 type Props = {
   open: boolean;
@@ -32,6 +33,11 @@ export function MobileNavigation({ open, onNavigate }: Props) {
           </Link>
         );
       })}
+      {externalNavigation.map((item) => (
+        <ExternalLink key={item.href} href={item.href} onClick={onNavigate}>
+          {item.label}
+        </ExternalLink>
+      ))}
     </nav>
   );
 }

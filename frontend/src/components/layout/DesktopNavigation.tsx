@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
-import { navigation } from '../../data/navigation';
+import { externalNavigation, navigation } from '../../data/navigation';
+import { ExternalLink } from '../common/ExternalLink';
 
 export function DesktopNavigation() {
   const { pathname } = useLocation();
@@ -21,6 +22,11 @@ export function DesktopNavigation() {
           </Link>
         );
       })}
+      {externalNavigation.map((item) => (
+        <ExternalLink key={item.href} href={item.href}>
+          {item.label}
+        </ExternalLink>
+      ))}
     </nav>
   );
 }

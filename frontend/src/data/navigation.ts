@@ -12,3 +12,8 @@ export const navigation = [
     aliases: ['/blog.html'],
   },
 ];
+
+export const externalNavigation = [
+  { label: 'Sites', href: 'https://lp-sites.algoritmux.com' },
+  { label: 'Geolocalização', href: 'https://lp-geolocalizacao.algoritmux.com' },
+];
